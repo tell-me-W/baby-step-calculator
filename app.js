@@ -181,12 +181,12 @@ function formatKoreanDate(dateString) {
 
 function createInitialState() {
   return {
-    dueDate: "2026-12-16",
+    dueDate: "2026-12-14",
     totalParentalLeaveDays: 548,
     nextSegmentId: 4,
     segments: [
       { id: 1, type: "PREG_LEAVE", startDate: "2026-05-01", days: 31 },
-      { id: 2, type: "PREG_LEAVE", startDate: "2026-09-01", days: 61 },
+      { id: 2, type: "PREG_LEAVE", startDate: "2026-10-01", days: 31 },
     ],
   };
 }
