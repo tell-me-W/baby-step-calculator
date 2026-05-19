@@ -55,15 +55,36 @@
         </fieldset>
       </div>
 
-      <div class="segment-tools">
-        <h3>전단부 스케줄</h3>
-        <div class="button-row">
-          <button id="addPregLeave" type="button">+ 육아휴직</button>
-          <button id="addWork" type="button" class="secondary-button">근무 구간 자동 계산</button>
-        </div>
+      <div class="family-input-grid">
+        <details class="person-panel" open>
+          <summary>
+            <span id="motherScheduleTitle">엄마 일정</span>
+            <small>임신중 육아휴직 입력</small>
+          </summary>
+          <div class="segment-tools">
+            <div class="button-row">
+              <button id="addPregLeave" type="button">+ 육아휴직</button>
+              <button id="addWork" type="button" class="secondary-button">근무 자동</button>
+            </div>
+          </div>
+          <ol id="segmentList" class="segment-list"></ol>
+        </details>
+
+        <details class="person-panel" open>
+          <summary>
+            <span id="fatherScheduleTitle">아빠 일정</span>
+            <small>출산휴가·육아휴직 입력</small>
+          </summary>
+          <div class="segment-tools">
+            <div class="button-row">
+              <button id="addSpouseBirthLeave" type="button">+ 배우자출산휴가</button>
+              <button id="addFatherParentalLeave" type="button" class="secondary-button">+ 육아휴직</button>
+            </div>
+          </div>
+          <ol id="fatherSegmentList" class="segment-list"></ol>
+        </details>
       </div>
 
-      <ol id="segmentList" class="segment-list"></ol>
       <div id="warningBox" class="warning" hidden></div>
     </section>
 
@@ -74,8 +95,18 @@
           <h2 id="timelineTitle">휴직 타임라인</h2>
         </div>
       </div>
-      <div id="timeline" class="timeline" aria-label="휴직 타임라인"></div>
+      <div id="timeline" class="timeline family-timeline" aria-label="휴직 타임라인"></div>
       <div id="timelineBoundaries" class="timeline-boundaries" aria-label="타임라인 경계 날짜"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="eligibilityTitle">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Eligibility</p>
+          <h2 id="eligibilityTitle">18개월 조건 확인</h2>
+        </div>
+      </div>
+      <div id="eligibilityCard" class="eligibility-card"></div>
     </section>
 
     <section class="results-grid">
@@ -85,21 +116,23 @@
             <p class="eyebrow">Schedule</p>
             <h2 id="scheduleTitle">상세 일정</h2>
           </div>
-        </div>
-        <div class="table-wrap">
-          <table>
+          </div>
+          <div class="table-wrap">
+            <table>
             <thead>
               <tr>
-                <th>구분</th>
+                  <th>대상</th>
+                  <th>구분</th>
                 <th>시작일</th>
                 <th>종료일</th>
                 <th>소요 일수</th>
               </tr>
             </thead>
-            <tbody id="scheduleBody"></tbody>
-          </table>
+              <tbody id="scheduleBody"></tbody>
+            </table>
+          </div>
+          <div id="scheduleCards" class="schedule-cards" aria-label="상세 일정 카드"></div>
         </div>
-      </div>
 
       <div class="panel" aria-labelledby="requestTitle">
         <div class="section-heading">
