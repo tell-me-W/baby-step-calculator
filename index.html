@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>분할형 육아휴직 시뮬레이터</title>
+  <title>우리 집 출산 준비 도구</title>
   <link rel="stylesheet" href="styles.css">
   <script src="app.js" defer></script>
 </head>
@@ -12,140 +12,305 @@
 <body>
   <header class="app-header">
     <div>
-      <p class="eyebrow">Maternity Leave Planner</p>
-      <h1>우리 집 맞춤형 휴가 플래너</h1>
+      <p class="eyebrow">Baby Step Calculator</p>
+      <h1>우리 집 출산 준비 도구</h1>
     </div>
-    <div class="summary-pill">
+    <div class="summary-pill" data-leave-summary>
       <span>복직 예정일</span>
       <strong id="returnDate">-</strong>
     </div>
   </header>
 
+  <nav class="app-tabs" aria-label="도구 선택">
+    <button
+      id="leavePlannerTab"
+      class="tab-button active"
+      type="button"
+      role="tab"
+      aria-selected="true"
+      aria-controls="leavePlannerPanel"
+      data-tab-target="leave"
+    >
+      육아휴직 플랜
+    </button>
+    <button
+      id="insuranceChecklistTab"
+      class="tab-button"
+      type="button"
+      role="tab"
+      aria-selected="false"
+      aria-controls="insuranceChecklistPanel"
+      data-tab-target="insurance"
+    >
+      태아보험 체크리스트
+    </button>
+  </nav>
+
   <main>
-    <section class="panel controls-panel" aria-labelledby="inputTitle">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Input</p>
-          <h2 id="inputTitle">기본 설정</h2>
-        </div>
-        <div class="quota-summary">
-          <span>사용</span>
-          <strong id="usedDays">0일</strong>
-          <span>잔여</span>
-          <strong id="remainingDays">0일</strong>
-        </div>
-      </div>
-
-      <div class="control-grid">
-        <label class="field">
-          <span>출산 예정일</span>
-          <input id="dueDate" type="date">
-        </label>
-
-        <fieldset class="quota-toggle">
-          <legend>육아휴직 한도</legend>
-          <label>
-            <input type="radio" name="quota" value="365">
-            <span>12개월 · 365일</span>
-          </label>
-          <label>
-            <input type="radio" name="quota" value="548">
-            <span>18개월 · 548일</span>
-          </label>
-        </fieldset>
-      </div>
-
-      <div class="family-input-grid">
-        <details class="person-panel" open>
-          <summary>
-            <span id="motherScheduleTitle">엄마 일정</span>
-            <small>임신중 육아휴직 입력</small>
-          </summary>
-          <div class="segment-tools">
-            <div class="button-row">
-              <button id="addPregLeave" type="button">+ 육아휴직</button>
-              <button id="addWork" type="button" class="secondary-button">근무 자동</button>
-            </div>
-          </div>
-          <ol id="segmentList" class="segment-list"></ol>
-        </details>
-
-        <details class="person-panel" open>
-          <summary>
-            <span id="fatherScheduleTitle">아빠 일정</span>
-            <small>출산휴가·육아휴직 입력</small>
-          </summary>
-          <div class="segment-tools">
-            <div class="button-row">
-              <button id="addSpouseBirthLeave" type="button">+ 배우자출산휴가</button>
-              <button id="addFatherParentalLeave" type="button" class="secondary-button">+ 육아휴직</button>
-            </div>
-          </div>
-          <ol id="fatherSegmentList" class="segment-list"></ol>
-        </details>
-      </div>
-
-      <div id="warningBox" class="warning" hidden></div>
-    </section>
-
-    <section class="panel" aria-labelledby="timelineTitle">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Timeline</p>
-          <h2 id="timelineTitle">휴직 타임라인</h2>
-        </div>
-      </div>
-      <div id="timeline" class="timeline family-timeline" aria-label="휴직 타임라인"></div>
-      <div id="timelineBoundaries" class="timeline-boundaries" aria-label="타임라인 경계 날짜"></div>
-    </section>
-
-    <section class="panel" aria-labelledby="eligibilityTitle">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Eligibility</p>
-          <h2 id="eligibilityTitle">18개월 조건 확인</h2>
-        </div>
-      </div>
-      <div id="eligibilityCard" class="eligibility-card"></div>
-    </section>
-
-    <section class="results-grid">
-      <div class="panel" aria-labelledby="scheduleTitle">
+    <section
+      id="leavePlannerPanel"
+      class="tab-panel"
+      role="tabpanel"
+      aria-labelledby="leavePlannerTab"
+      data-tab-panel="leave"
+    >
+      <section class="panel controls-panel" aria-labelledby="inputTitle">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Schedule</p>
-            <h2 id="scheduleTitle">상세 일정</h2>
+            <p class="eyebrow">Input</p>
+            <h2 id="inputTitle">기본 설정</h2>
           </div>
+          <div class="quota-summary">
+            <span>사용</span>
+            <strong id="usedDays">0일</strong>
+            <span>잔여</span>
+            <strong id="remainingDays">0일</strong>
+          </div>
+        </div>
+
+        <div class="control-grid">
+          <label class="field">
+            <span>출산 예정일</span>
+            <input id="dueDate" type="date">
+          </label>
+
+          <fieldset class="quota-toggle">
+            <legend>육아휴직 한도</legend>
+            <label>
+              <input type="radio" name="quota" value="365">
+              <span>12개월 · 365일</span>
+            </label>
+            <label>
+              <input type="radio" name="quota" value="548">
+              <span>18개월 · 548일</span>
+            </label>
+          </fieldset>
+        </div>
+
+        <div class="family-input-grid">
+          <details class="person-panel" open>
+            <summary>
+              <span id="motherScheduleTitle">엄마 일정</span>
+              <small>임신중 육아휴직 입력</small>
+            </summary>
+            <div class="segment-tools">
+              <div class="button-row">
+                <button id="addPregLeave" type="button">+ 육아휴직</button>
+                <button id="addWork" type="button" class="secondary-button">근무 자동</button>
+              </div>
+            </div>
+            <ol id="segmentList" class="segment-list"></ol>
+          </details>
+
+          <details class="person-panel" open>
+            <summary>
+              <span id="fatherScheduleTitle">아빠 일정</span>
+              <small>출산휴가·육아휴직 입력</small>
+            </summary>
+            <div class="segment-tools">
+              <div class="button-row">
+                <button id="addSpouseBirthLeave" type="button">+ 배우자출산휴가</button>
+                <button id="addFatherParentalLeave" type="button" class="secondary-button">+ 육아휴직</button>
+              </div>
+            </div>
+            <ol id="fatherSegmentList" class="segment-list"></ol>
+          </details>
+        </div>
+
+        <div id="warningBox" class="warning" hidden></div>
+      </section>
+
+      <section class="panel" aria-labelledby="timelineTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Timeline</p>
+            <h2 id="timelineTitle">휴직 타임라인</h2>
+          </div>
+        </div>
+        <div id="timeline" class="timeline family-timeline" aria-label="휴직 타임라인"></div>
+        <div id="timelineBoundaries" class="timeline-boundaries" aria-label="타임라인 경계 날짜"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="eligibilityTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Eligibility</p>
+            <h2 id="eligibilityTitle">18개월 조건 확인</h2>
+          </div>
+        </div>
+        <div id="eligibilityCard" class="eligibility-card"></div>
+      </section>
+
+      <section class="panel benefit-panel" aria-labelledby="benefitTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Benefit</p>
+            <h2 id="benefitTitle">육아휴직 급여 예상액</h2>
+            <p class="section-copy">엄마와 아빠의 월 통상임금을 넣으면 기존 휴직 일정에서 월별 예상 지급액을 자동 계산합니다.</p>
+          </div>
+        </div>
+
+        <div class="benefit-input-grid">
+          <label class="field">
+            <span>아내 월 통상임금</span>
+            <input id="motherMonthlyWage" type="number" min="0" step="10000" inputmode="numeric">
+          </label>
+          <label class="field">
+            <span>남편 월 통상임금</span>
+            <input id="fatherMonthlyWage" type="number" min="0" step="10000" inputmode="numeric">
+          </label>
+        </div>
+
+        <div class="benefit-summary-grid">
+          <div class="metric-card">
+            <span>아내 예상 합계</span>
+            <strong id="motherBenefitTotal">0원</strong>
+          </div>
+          <div class="metric-card">
+            <span>남편 예상 합계</span>
+            <strong id="fatherBenefitTotal">0원</strong>
+          </div>
+          <div class="metric-card">
+            <span>부부 합산</span>
+            <strong id="householdBenefitTotal">0원</strong>
+          </div>
+        </div>
+
+        <div class="benefit-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>월</th>
+                <th>대상</th>
+                <th>휴직일</th>
+                <th>적용</th>
+                <th>예상 지급액</th>
+              </tr>
+            </thead>
+            <tbody id="benefitBody"></tbody>
+          </table>
+        </div>
+
+        <p class="legal-note">
+          실제 지급액은 고용보험 피보험 단위기간, 신청 시점, 고용센터 심사, 회사 확인서 내용에 따라 달라질 수 있습니다.
+        </p>
+      </section>
+
+      <section class="results-grid">
+        <div class="panel" aria-labelledby="scheduleTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Schedule</p>
+              <h2 id="scheduleTitle">상세 일정</h2>
+            </div>
           </div>
           <div class="table-wrap">
             <table>
-            <thead>
-              <tr>
+              <thead>
+                <tr>
                   <th>대상</th>
                   <th>구분</th>
-                <th>시작일</th>
-                <th>종료일</th>
-                <th>소요 일수</th>
-              </tr>
-            </thead>
+                  <th>시작일</th>
+                  <th>종료일</th>
+                  <th>소요 일수</th>
+                </tr>
+              </thead>
               <tbody id="scheduleBody"></tbody>
             </table>
           </div>
           <div id="scheduleCards" class="schedule-cards" aria-label="상세 일정 카드"></div>
         </div>
 
-      <div class="panel" aria-labelledby="requestTitle">
+        <div class="panel" aria-labelledby="requestTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">HR Memo</p>
+              <h2 id="requestTitle">제출 참고 문구</h2>
+            </div>
+          </div>
+          <textarea id="requestText" rows="9" readonly></textarea>
+          <p class="legal-note">
+            실제 신청 가능 여부와 서류 양식은 회사 인사팀, 고용노동부, 전문가 확인이 필요합니다.
+          </p>
+        </div>
+      </section>
+    </section>
+
+    <section
+      id="insuranceChecklistPanel"
+      class="tab-panel"
+      role="tabpanel"
+      aria-labelledby="insuranceChecklistTab"
+      data-tab-panel="insurance"
+      hidden
+    >
+      <section class="panel insurance-overview" aria-labelledby="insuranceTitle">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">HR Memo</p>
-            <h2 id="requestTitle">제출 참고 문구</h2>
+            <p class="eyebrow">Insurance Checklist</p>
+            <h2 id="insuranceTitle">태아보험 체크리스트</h2>
+            <p class="section-copy">상담 전에 꼭 확인할 항목을 우선순위대로 체크하세요.</p>
           </div>
         </div>
-        <textarea id="requestText" rows="9" readonly></textarea>
-        <p class="legal-note">
-          실제 신청 가능 여부와 서류 양식은 회사 인사팀, 고용노동부, 전문가 확인이 필요합니다.
-        </p>
-      </div>
+
+        <div class="insurance-summary-grid">
+          <div class="metric-card">
+            <span>전체 확인</span>
+            <strong id="insuranceProgressText">0/0</strong>
+          </div>
+          <div class="metric-card">
+            <span>필수 남음</span>
+            <strong id="insuranceRequiredRemaining">0개</strong>
+          </div>
+          <div class="metric-card">
+            <span>상담 질문</span>
+            <strong id="insuranceQuestionsReady">준비 전</strong>
+          </div>
+        </div>
+
+        <div class="progress-track" aria-label="태아보험 체크리스트 진행률">
+          <div id="insuranceProgressBar" class="progress-fill"></div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="insuranceChecklistTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Checklist</p>
+            <h2 id="insuranceChecklistTitle">확인 항목</h2>
+          </div>
+        </div>
+        <div id="insuranceChecklistSections" class="insurance-sections"></div>
+      </section>
+
+      <section class="results-grid insurance-bottom-grid">
+        <div class="panel" aria-labelledby="insuranceQuestionTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Questions</p>
+              <h2 id="insuranceQuestionTitle">설계사/보험사에 물어볼 질문</h2>
+            </div>
+          </div>
+          <ul id="insuranceQuestionList" class="question-list"></ul>
+        </div>
+
+        <div class="panel" aria-labelledby="insuranceSourceTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Sources</p>
+              <h2 id="insuranceSourceTitle">출처 및 주의</h2>
+            </div>
+          </div>
+          <p class="legal-note">
+            이 화면은 가입 판단을 대신하지 않습니다. 실제 보장 범위, 면책·감액, 고지사항은 상품설명서와 약관,
+            보험사 또는 전문가 확인이 필요합니다.
+          </p>
+          <ul class="source-list">
+            <li><a href="https://www.easylaw.go.kr/CSP/CnpClsMain.laf?ccfNo=2&cciNo=1&cnpClsNo=2&csmSeq=526&popMenu=ov" target="_blank" rel="noreferrer">생활법령 보험 가입 시 확인사항</a></li>
+            <li><a href="https://www.kostat.go.kr/board.es?act=view&bid=204&list_no=429586&mid=a10301020300" target="_blank" rel="noreferrer">통계청 2023년 출생·사망통계</a></li>
+          </ul>
+        </div>
+      </section>
     </section>
   </main>
 </body>

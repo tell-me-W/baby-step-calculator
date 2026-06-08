@@ -23,6 +23,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -54,7 +58,8 @@ button:hover {
 }
 
 main,
-.app-header {
+.app-header,
+.app-tabs {
   width: min(1120px, calc(100% - 24px));
   margin: 0 auto;
 }
@@ -78,6 +83,33 @@ main,
 .app-header h1 {
   font-size: clamp(28px, 4vw, 44px);
   line-height: 1.08;
+}
+
+.app-tabs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.tab-button {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--text);
+}
+
+.tab-button:hover {
+  background: #f7f3f0;
+}
+
+.tab-button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.tab-panel[hidden] {
+  display: none;
 }
 
 .eyebrow {
@@ -135,6 +167,14 @@ main,
 
 .section-heading h2 {
   font-size: 22px;
+}
+
+.section-copy {
+  max-width: 620px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .controls-panel {
@@ -547,6 +587,253 @@ textarea {
   line-height: 1.5;
 }
 
+.insurance-summary-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.benefit-input-grid,
+.benefit-summary-grid {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.benefit-table-wrap {
+  overflow-x: auto;
+}
+
+.benefit-table-wrap table {
+  min-width: 1100px;
+  table-layout: fixed;
+}
+
+.benefit-table-wrap th,
+.benefit-table-wrap td {
+  white-space: normal;
+  vertical-align: top;
+}
+
+.benefit-table-wrap th:nth-child(1),
+.benefit-table-wrap td:nth-child(1) {
+  width: 88px;
+  white-space: nowrap;
+}
+
+.benefit-table-wrap th:nth-child(2),
+.benefit-table-wrap td:nth-child(2) {
+  width: 104px;
+}
+
+.benefit-table-wrap th:nth-child(3),
+.benefit-table-wrap td:nth-child(3) {
+  width: 134px;
+}
+
+.benefit-table-wrap th:nth-child(4),
+.benefit-table-wrap td:nth-child(4) {
+  width: 496px;
+}
+
+.benefit-table-wrap th:nth-child(5),
+.benefit-table-wrap td:nth-child(5) {
+  width: 258px;
+}
+
+.benefit-line {
+  border-left: 3px solid transparent;
+  min-height: 1.45em;
+  line-height: 1.45;
+  padding-left: 8px;
+}
+
+.benefit-line.mother {
+  border-left-color: #0f766e;
+  color: #0f3f3a;
+}
+
+.benefit-line.father {
+  border-left-color: #2563eb;
+  color: #123f8c;
+}
+
+.benefit-owner-cell {
+  white-space: nowrap;
+}
+
+.benefit-owner-line {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  min-height: 1.75em;
+}
+
+.benefit-owner-plus {
+  color: var(--muted);
+  font-weight: 900;
+  width: 10px;
+}
+
+.benefit-owner-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  font-weight: 900;
+  line-height: 1;
+  margin: 0;
+  padding: 5px 8px;
+}
+
+.benefit-owner-badge.mother {
+  background: #dcf5f1;
+  color: #0f766e;
+}
+
+.benefit-owner-badge.father {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.benefit-amount-cell {
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.benefit-amount-cell strong {
+  font-weight: 900;
+}
+
+.metric-card {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdfb;
+  padding: 14px;
+}
+
+.metric-card span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.metric-card strong {
+  font-size: 22px;
+}
+
+.progress-track {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e7eceb;
+  margin-top: 16px;
+}
+
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 180ms ease;
+}
+
+.insurance-sections {
+  display: grid;
+  gap: 14px;
+}
+
+.checklist-section {
+  display: grid;
+  gap: 10px;
+}
+
+.checklist-section h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.checklist-items {
+  display: grid;
+  gap: 10px;
+}
+
+.checklist-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdfb;
+  padding: 12px;
+}
+
+.checklist-item input {
+  width: 20px;
+  height: 20px;
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+
+.checklist-copy {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.checklist-copy strong {
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.checklist-copy p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.priority-badge {
+  width: fit-content;
+  border-radius: 999px;
+  background: var(--soft-accent);
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 900;
+  padding: 4px 8px;
+}
+
+.priority-badge.optional {
+  background: #eef2f7;
+  color: #334155;
+}
+
+.priority-badge.question {
+  background: #fff1d6;
+  color: var(--warning-text);
+}
+
+.question-list,
+.source-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.question-list li,
+.source-list li {
+  line-height: 1.55;
+}
+
+.source-list a {
+  color: var(--accent-strong);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
 .eligibility-card {
   display: grid;
   gap: 8px;
@@ -579,7 +866,8 @@ textarea {
 
 @media (min-width: 900px) {
   main,
-  .app-header {
+  .app-header,
+  .app-tabs {
     width: min(1120px, calc(100% - 32px));
   }
 
@@ -596,6 +884,14 @@ textarea {
 
   .panel {
     padding: 22px;
+  }
+
+  .app-tabs {
+    display: flex;
+  }
+
+  .tab-button {
+    min-width: 180px;
   }
 
   .section-heading {
@@ -640,6 +936,19 @@ textarea {
 
   .results-grid {
     grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  }
+
+  .insurance-summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .benefit-input-grid,
+  .benefit-summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .benefit-input-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .table-wrap {

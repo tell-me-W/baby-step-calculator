@@ -6,6 +6,10 @@ const {
   addDays,
   differenceInInclusiveDays,
   addBusinessDays,
+  INSURANCE_CHECKLIST_STORAGE_KEY,
+  calculateInsuranceProgress,
+  calculateParentalLeaveBenefits,
+  normalizeInsuranceChecklistState,
 } = require("../app.js");
 
 test("anchors maternity leave 45 days before due date for a 90 day leave", () => {
@@ -391,4 +395,295 @@ test("date helpers count leap days and month boundaries inclusively", () => {
   assert.equal(addDays("2024-02-28", 1), "2024-02-29");
   assert.equal(addDays("2024-02-28", 2), "2024-03-01");
   assert.equal(differenceInInclusiveDays("2024-02-28", "2024-03-01"), 3);
+});
+
+test("normalizes insurance checklist state to known unique item ids", () => {
+  const sections = [
+    {
+      id: "basics",
+      items: [
+        { id: "understand-structure", required: true },
+        { id: "confirm-after-birth", required: true },
+      ],
+    },
+    {
+      id: "questions",
+      items: [{ id: "ask-nicu-conditions", kind: "question" }],
+    },
+  ];
+
+  assert.equal(INSURANCE_CHECKLIST_STORAGE_KEY, "babyStep.insuranceChecklist.v1");
+  assert.deepEqual(
+    normalizeInsuranceChecklistState(
+      ["confirm-after-birth", "unknown", "ask-nicu-conditions", "confirm-after-birth"],
+      sections
+    ),
+    ["confirm-after-birth", "ask-nicu-conditions"]
+  );
+});
+
+test("calculates insurance checklist progress and question readiness", () => {
+  const sections = [
+    {
+      id: "required",
+      items: [
+        { id: "check-timing", required: true },
+        { id: "prepare-disclosures", required: true },
+        { id: "review-rider", required: false },
+      ],
+    },
+    {
+      id: "questions",
+      items: [
+        { id: "ask-maturity", kind: "question" },
+        { id: "ask-waiting-period", kind: "question" },
+      ],
+    },
+  ];
+
+  assert.deepEqual(calculateInsuranceProgress(sections, ["check-timing", "ask-maturity"]), {
+    totalCount: 5,
+    checkedCount: 2,
+    percent: 40,
+    requiredCount: 2,
+    requiredCheckedCount: 1,
+    requiredRemaining: 1,
+    questionCount: 2,
+    questionCheckedCount: 1,
+    questionsReady: false,
+  });
+
+  assert.equal(
+    calculateInsuranceProgress(sections, [
+      "check-timing",
+      "prepare-disclosures",
+      "ask-maturity",
+      "ask-waiting-period",
+    ]).questionsReady,
+    true
+  );
+});
+
+test("groups monthly parental leave benefits by expected payment month with retroactive six plus six adjustments", () => {
+  const schedule = calculateSchedule({
+    dueDate: "2026-12-14",
+    totalParentalLeaveDays: 548,
+    segments: [
+      { id: 1, type: "PREG_LEAVE", startDate: "2026-05-01", days: 61 },
+      { id: 2, type: "PREG_LEAVE", startDate: "2026-10-01", days: 31 },
+    ],
+    fatherSegments: [
+      { id: 1, type: "FATHER_PARENTAL", startDate: "2027-03-01", days: 122 },
+    ],
+  });
+
+  const benefit = calculateParentalLeaveBenefits(schedule, {
+    motherMonthlyWage: 5000000,
+    fatherMonthlyWage: 5000000,
+  });
+
+  assert.deepEqual(
+    benefit.rows.map(({ month, owner, leaveDaysText, ruleText, amountText, totalAmount }) => ({
+      month,
+      owner,
+      leaveDaysText,
+      ruleText,
+      amountText,
+      totalAmount,
+    })),
+    [
+      {
+        month: "2026-05",
+        owner: "아내",
+        leaveDaysText: "아내 31일",
+        ruleText: "일반 1개월차, 상한 250만원",
+        amountText: "2,500,000원",
+        totalAmount: 2500000,
+      },
+      {
+        month: "2026-06",
+        owner: "아내",
+        leaveDaysText: "아내 30일",
+        ruleText: "일반 2개월차, 상한 250만원",
+        amountText: "2,500,000원",
+        totalAmount: 2500000,
+      },
+      {
+        month: "2026-10",
+        owner: "아내",
+        leaveDaysText: "아내 29일",
+        ruleText: "일반 3개월차, 상한 250만원 일할",
+        amountText: "2,338,710원",
+        totalAmount: 2338710,
+      },
+      {
+        month: "2027-01",
+        owner: "아내",
+        leaveDaysText: "아내 4일",
+        ruleText: "일반 4개월차, 상한 200만원 일할",
+        amountText: "258,065원",
+        totalAmount: 258065,
+      },
+      {
+        month: "2027-02",
+        owner: "아내",
+        leaveDaysText: "아내 28일",
+        ruleText: "일반 5개월차, 상한 200만원",
+        amountText: "2,000,000원",
+        totalAmount: 2000000,
+      },
+      {
+        month: "2027-03",
+        owner: "아내+남편",
+        leaveDaysText: "아내 31일 + 남편 31일",
+        ruleText: "아내 일반 6개월차, 상한 200만원 + 남편 6+6 1개월차, 상한 250만원",
+        amountText: "2,000,000원 + 2,500,000원 = 4,500,000원",
+        totalAmount: 4500000,
+      },
+      {
+        month: "2027-04",
+        owner: "아내+남편",
+        leaveDaysText: "아내 30일 + 남편 30일",
+        ruleText: "아내 일반 7개월차 이후, 상한 160만원 + 남편 6+6 2개월차, 상한 250만원",
+        amountText: "1,600,000원 + 2,500,000원 = 4,100,000원",
+        totalAmount: 4100000,
+      },
+      {
+        month: "2027-05",
+        owner: "아내+남편",
+        leaveDaysText: "아내 31일 + 남편 31일",
+        ruleText: "아내 일반 7개월차 이후, 상한 160만원 + 6+6 3개월차 소급 + 남편 6+6 3개월차, 상한 300만원",
+        amountText: "1,600,000원 + 467,742원 + 3,000,000원 = 5,067,742원",
+        totalAmount: 5067742,
+      },
+      {
+        month: "2027-06",
+        owner: "아내+남편",
+        leaveDaysText: "아내 30일 + 남편 30일",
+        ruleText: "아내 일반 7개월차 이후, 상한 160만원 + 6+6 4개월차 소급 + 남편 6+6 4개월차, 상한 350만원",
+        amountText: "1,600,000원 + 193,548원 + 3,500,000원 = 5,293,548원",
+        totalAmount: 5293548,
+      },
+      {
+        month: "2027-07",
+        owner: "아내",
+        leaveDaysText: "아내 31일",
+        ruleText: "일반 7개월차 이후, 상한 160만원",
+        amountText: "1,600,000원",
+        totalAmount: 1600000,
+      },
+      {
+        month: "2027-08",
+        owner: "아내",
+        leaveDaysText: "아내 31일",
+        ruleText: "일반 7개월차 이후, 상한 160만원",
+        amountText: "1,600,000원",
+        totalAmount: 1600000,
+      },
+      {
+        month: "2027-09",
+        owner: "아내",
+        leaveDaysText: "아내 30일",
+        ruleText: "일반 7개월차 이후, 상한 160만원",
+        amountText: "1,600,000원",
+        totalAmount: 1600000,
+      },
+      {
+        month: "2027-10",
+        owner: "아내",
+        leaveDaysText: "아내 31일",
+        ruleText: "일반 7개월차 이후, 상한 160만원",
+        amountText: "1,600,000원",
+        totalAmount: 1600000,
+      },
+      {
+        month: "2027-11",
+        owner: "아내",
+        leaveDaysText: "아내 30일",
+        ruleText: "일반 7개월차 이후, 상한 160만원",
+        amountText: "1,600,000원",
+        totalAmount: 1600000,
+      },
+      {
+        month: "2027-12",
+        owner: "아내",
+        leaveDaysText: "아내 31일",
+        ruleText: "일반 7개월차 이후, 상한 160만원",
+        amountText: "1,600,000원",
+        totalAmount: 1600000,
+      },
+      {
+        month: "2028-01",
+        owner: "아내",
+        leaveDaysText: "아내 31일",
+        ruleText: "일반 7개월차 이후, 상한 160만원",
+        amountText: "1,600,000원",
+        totalAmount: 1600000,
+      },
+      {
+        month: "2028-02",
+        owner: "아내",
+        leaveDaysText: "아내 29일",
+        ruleText: "일반 7개월차 이후, 상한 160만원",
+        amountText: "1,600,000원",
+        totalAmount: 1600000,
+      },
+      {
+        month: "2028-03",
+        owner: "아내",
+        leaveDaysText: "아내 31일",
+        ruleText: "일반 7개월차 이후, 상한 160만원",
+        amountText: "1,600,000원",
+        totalAmount: 1600000,
+      },
+      {
+        month: "2028-04",
+        owner: "아내",
+        leaveDaysText: "아내 29일",
+        ruleText: "일반 7개월차 이후, 상한 160만원 일할",
+        amountText: "1,546,667원",
+        totalAmount: 1546667,
+      },
+    ]
+  );
+
+  assert.deepEqual(benefit.totals, {
+    mother: 33004732,
+    father: 11500000,
+    household: 44504732,
+  });
+});
+
+test("applies six plus six to the second parent when father starts parental leave first", () => {
+  const benefit = calculateParentalLeaveBenefits(
+    {
+      motherItems: [
+        { id: 1, type: "POSTNATAL", startDate: "2027-05-01", endDate: "2027-08-30", days: 122 },
+      ],
+      fatherItems: [
+        { id: 2, type: "FATHER_PARENTAL", startDate: "2027-01-01", endDate: "2027-05-02", days: 122 },
+      ],
+    },
+    {
+      motherMonthlyWage: 5000000,
+      fatherMonthlyWage: 5000000,
+    }
+  );
+
+  const july = benefit.rows.find((row) => row.month === "2027-07");
+
+  assert.deepEqual(
+    {
+      owner: july.owner,
+      ruleText: july.ruleText,
+      amountText: july.amountText,
+      totalAmount: july.totalAmount,
+    },
+    {
+      owner: "아내+남편",
+      ruleText: "아내 6+6 3개월차, 상한 300만원 + 남편 6+6 3개월차 소급",
+      amountText: "3,000,000원 + 500,000원 = 3,500,000원",
+      totalAmount: 3500000,
+    }
+  );
 });

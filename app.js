@@ -5,7 +5,7 @@ const SEGMENT_LABELS = {
   WORK: "근무",
   MATERNITY: "출산전후휴가",
   POSTNATAL: "잔여 육아휴직",
-  SPOUSE_BIRTH: "배우자출산휴가",
+  SPOUSE_BIRTH: "배우자 출산휴가",
   FATHER_PARENTAL: "아빠 육아휴직",
 };
 
@@ -17,6 +17,210 @@ const SEGMENT_CLASSES = {
   SPOUSE_BIRTH: "spouse-birth",
   FATHER_PARENTAL: "father-parental",
 };
+
+const INSURANCE_CHECKLIST_STORAGE_KEY = "babyStep.insuranceChecklist.v1";
+
+const INSURANCE_CHECKLIST_SECTIONS = [
+  {
+    id: "basics",
+    title: "기본 이해",
+    eyebrow: "Structure",
+    items: [
+      {
+        id: "understand-insurance-structure",
+        title: "태아보험은 어린이보험에 태아가입특약/산모특약을 붙이는 구조인지 확인",
+        description: "별도 보험이라기보다 출생을 전제로 한 어린이보험 설계라는 점을 먼저 잡습니다.",
+        required: true,
+        priority: "필수",
+      },
+      {
+        id: "confirm-after-birth-coverage",
+        title: "핵심 보장이 대체로 출생 후 아이에게 발생한 위험 중심인지 확인",
+        description: "임신 중 초음파나 정밀검사 비용이 아이 보험으로 바로 보장된다고 보지 않습니다.",
+        required: true,
+        priority: "필수",
+      },
+    ],
+  },
+  {
+    id: "timing-disclosure",
+    title: "가입 타이밍/고지",
+    eyebrow: "Timing",
+    items: [
+      {
+        id: "review-before-screenings",
+        title: "1차 기형아 검사 전후로 설계안 비교를 시작",
+        description: "검사 이후 이상 소견이나 추가검사 권유가 생기면 조건이 달라질 수 있습니다.",
+        required: true,
+        priority: "필수",
+      },
+      {
+        id: "confirm-week-22-riders",
+        title: "핵심 태아특약 가입 가능 주수와 22주 전 완료 필요 여부 확인",
+        description: "보험사별로 태아 관련 특약의 가입 가능 주수가 다를 수 있습니다.",
+        required: true,
+        priority: "필수",
+      },
+      {
+        id: "prepare-disclosure-notes",
+        title: "산모 병력, 약 복용, 검사소견, 난임시술, 다태아 여부를 고지용으로 정리",
+        description: "청약서 질문표에 맞춰 사실대로 답할 수 있도록 상담 전 메모를 준비합니다.",
+        required: true,
+        priority: "필수",
+      },
+    ],
+  },
+  {
+    id: "core-coverage",
+    title: "핵심 보장",
+    eyebrow: "Coverage",
+    items: [
+      {
+        id: "check-child-medical-indemnity",
+        title: "어린이 실손의료보험 포함 여부 확인",
+        description: "출생 후 실제 치료비 부담을 줄이는 기본 축으로 봅니다.",
+        required: true,
+        priority: "필수",
+      },
+      {
+        id: "check-congenital-coverage",
+        title: "선천이상 진단비/수술비/입원비 범위 확인",
+        description: "선천이상 분류, 질병코드, 지급 제외 조건을 약관 기준으로 봅니다.",
+        required: true,
+        priority: "필수",
+      },
+      {
+        id: "check-low-weight-nicu",
+        title: "저체중아·미숙아·NICU/인큐베이터 담보 확인",
+        description: "입원일당 시작일, 지급 한도, 인큐베이터 조건을 함께 확인합니다.",
+        required: true,
+        priority: "필수",
+      },
+      {
+        id: "check-newborn-disease",
+        title: "신생아/주산기 질환 입원·수술 담보 확인",
+        description: "황달, 호흡곤란, 감염처럼 출생 직후 생길 수 있는 입원 위험을 봅니다.",
+        required: true,
+        priority: "필수",
+      },
+    ],
+  },
+  {
+    id: "comparison",
+    title: "비교 포인트",
+    eyebrow: "Compare",
+    items: [
+      {
+        id: "ask-maturity-difference",
+        title: "30세 만기와 100세 만기의 보험료/전환 조건 차이 질문",
+        description: "초기 보험료와 장기 유지 가능성을 같이 비교합니다.",
+        kind: "question",
+        priority: "질문",
+      },
+      {
+        id: "ask-renewal-type",
+        title: "갱신형/비갱신형, 납입기간, 만기별 총보험료 질문",
+        description: "월 보험료만 보지 말고 오래 유지할 때의 부담을 확인합니다.",
+        kind: "question",
+        priority: "질문",
+      },
+      {
+        id: "ask-waiting-reduction",
+        title: "면책기간, 감액기간, 지급 제한 사유 질문",
+        description: "가입 직후 보장 제한과 보험금 지급 예외를 확인합니다.",
+        kind: "question",
+        priority: "질문",
+      },
+      {
+        id: "ask-hospitalization-conditions",
+        title: "입원일당 지급 조건과 NICU 포함 여부 질문",
+        description: "며칠째부터 지급되는지, 일반입원/NICU 조건이 다른지 확인합니다.",
+        kind: "question",
+        priority: "질문",
+      },
+    ],
+  },
+  {
+    id: "optional-riders",
+    title: "선택 항목",
+    eyebrow: "Optional",
+    items: [
+      {
+        id: "review-mother-riders",
+        title: "산모특약은 산모 기존 보장과 예산을 보고 선택",
+        description: "임신중독증, 임신성 당뇨, 유산수술비, 입원일당 등을 별도로 검토합니다.",
+        priority: "선택",
+      },
+      {
+        id: "review-major-disease",
+        title: "중대질병 진단비는 핵심 보장 이후 예산이 남을 때 검토",
+        description: "큰 위험 대비 목적은 분명하지만 보험료 영향도 같이 봅니다.",
+        priority: "선택",
+      },
+      {
+        id: "trim-lifestyle-riders",
+        title: "독감, 수족구, 골절, 응급실 등 생활형 특약은 과다 구성 여부 점검",
+        description: "체감은 좋지만 보험료 대비 우선순위는 낮게 둡니다.",
+        priority: "선택",
+      },
+    ],
+  },
+];
+
+const BENEFIT_OWNER_LABELS = {
+  mother: "아내",
+  father: "남편",
+};
+
+const SIX_PLUS_SIX_CAPS = [2500000, 2500000, 3000000, 3500000, 4000000, 4500000];
+
+const GENERAL_BENEFIT_RULES = [
+  { throughMonth: 3, rate: 1, cap: 2500000 },
+  { throughMonth: 6, rate: 1, cap: 2000000 },
+  { throughMonth: Infinity, rate: 0.8, cap: 1600000 },
+];
+
+function getInsuranceChecklistItems(sections = INSURANCE_CHECKLIST_SECTIONS) {
+  return sections.flatMap((section) => section.items || []);
+}
+
+function normalizeInsuranceChecklistState(value, sections = INSURANCE_CHECKLIST_SECTIONS) {
+  const knownIds = new Set(getInsuranceChecklistItems(sections).map((item) => item.id));
+  const seen = new Set();
+  const source = Array.isArray(value) ? value : [];
+
+  return source.filter((id) => {
+    if (!knownIds.has(id) || seen.has(id)) {
+      return false;
+    }
+
+    seen.add(id);
+    return true;
+  });
+}
+
+function calculateInsuranceProgress(sections = INSURANCE_CHECKLIST_SECTIONS, checkedIds = []) {
+  const items = getInsuranceChecklistItems(sections);
+  const normalizedCheckedIds = normalizeInsuranceChecklistState(checkedIds, sections);
+  const checkedSet = new Set(normalizedCheckedIds);
+  const requiredItems = items.filter((item) => item.required);
+  const questionItems = items.filter((item) => item.kind === "question");
+  const requiredCheckedCount = requiredItems.filter((item) => checkedSet.has(item.id)).length;
+  const questionCheckedCount = questionItems.filter((item) => checkedSet.has(item.id)).length;
+  const checkedCount = normalizedCheckedIds.length;
+
+  return {
+    totalCount: items.length,
+    checkedCount,
+    percent: items.length > 0 ? Math.round((checkedCount / items.length) * 100) : 0,
+    requiredCount: requiredItems.length,
+    requiredCheckedCount,
+    requiredRemaining: requiredItems.length - requiredCheckedCount,
+    questionCount: questionItems.length,
+    questionCheckedCount,
+    questionsReady: questionItems.length > 0 && questionCheckedCount === questionItems.length,
+  };
+}
 
 function parseDate(value) {
   const [year, month, day] = value.split("-").map(Number);
@@ -60,6 +264,336 @@ function addBusinessDays(startDate, businessDays) {
 
 function differenceInInclusiveDays(startDate, endDate) {
   return Math.floor((parseDate(endDate) - parseDate(startDate)) / DAY_MS) + 1;
+}
+
+function getMonthKey(dateString) {
+  return dateString.slice(0, 7);
+}
+
+function getDaysInMonth(monthKey) {
+  const [year, month] = monthKey.split("-").map(Number);
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function getMonthEndDate(monthKey) {
+  return `${monthKey}-${String(getDaysInMonth(monthKey)).padStart(2, "0")}`;
+}
+
+function formatWon(amount) {
+  return `${Math.round(amount).toLocaleString("ko-KR")}원`;
+}
+
+function formatCap(cap) {
+  return `${Math.round(cap / 10000)}만원`;
+}
+
+function splitItemIntoMonthlyChunks(item, owner) {
+  const chunks = [];
+  let cursor = item.startDate;
+
+  while (parseDate(cursor) <= parseDate(item.endDate)) {
+    const month = getMonthKey(cursor);
+    const chunkEnd = parseDate(item.endDate) < parseDate(getMonthEndDate(month))
+      ? item.endDate
+      : getMonthEndDate(month);
+    const days = differenceInInclusiveDays(cursor, chunkEnd);
+
+    chunks.push({
+      owner,
+      month,
+      startDate: cursor,
+      endDate: chunkEnd,
+      days,
+      daysInMonth: getDaysInMonth(month),
+      isPartialMonth: days !== getDaysInMonth(month),
+    });
+
+    cursor = addDays(chunkEnd, 1);
+  }
+
+  return chunks;
+}
+
+function mergeChunksByMonth(chunks) {
+  const chunksByMonth = new Map();
+
+  chunks.forEach((chunk) => {
+    const current = chunksByMonth.get(chunk.month);
+
+    if (!current) {
+      chunksByMonth.set(chunk.month, { ...chunk });
+      return;
+    }
+
+    current.days += chunk.days;
+    current.startDate = parseDate(chunk.startDate) < parseDate(current.startDate)
+      ? chunk.startDate
+      : current.startDate;
+    current.endDate = parseDate(chunk.endDate) > parseDate(current.endDate)
+      ? chunk.endDate
+      : current.endDate;
+    current.isPartialMonth = current.days !== current.daysInMonth;
+  });
+
+  return [...chunksByMonth.values()].sort((a, b) => a.month.localeCompare(b.month));
+}
+
+function getGeneralBenefitRule(monthNumber) {
+  return GENERAL_BENEFIT_RULES.find((rule) => monthNumber <= rule.throughMonth);
+}
+
+function calculateBenefitAmount(monthlyWage, rate, cap, days, daysInMonth) {
+  const monthlyAmount = Math.min(Math.max(Number(monthlyWage) || 0, 0) * rate, cap);
+  return Math.round(monthlyAmount * (days / daysInMonth));
+}
+
+function getBenefitRuleText(monthNumber, useSixPlusSix, cap) {
+  if (useSixPlusSix) {
+    return `6+6 ${monthNumber}개월차, 상한 ${formatCap(cap)}`;
+  }
+
+  return monthNumber <= 6
+    ? `일반 ${monthNumber}개월차, 상한 ${formatCap(cap)}`
+    : `일반 7개월차 이후, 상한 ${formatCap(cap)}`;
+}
+
+function getBenefitRule(monthNumber, useSixPlusSix) {
+  if (useSixPlusSix) {
+    return {
+      rate: 1,
+      cap: SIX_PLUS_SIX_CAPS[monthNumber - 1],
+      ruleText: getBenefitRuleText(monthNumber, true, SIX_PLUS_SIX_CAPS[monthNumber - 1]),
+    };
+  }
+
+  const rule = getGeneralBenefitRule(monthNumber);
+
+  return {
+    rate: rule.rate,
+    cap: rule.cap,
+    ruleText: getBenefitRuleText(monthNumber, false, rule.cap),
+  };
+}
+
+function createBenefitPart(chunk, monthNumber, monthlyWage, options = {}) {
+  const ownerLabel = BENEFIT_OWNER_LABELS[chunk.owner];
+  const rule = getBenefitRule(monthNumber, Boolean(options.useSixPlusSix));
+  const baseAmount = calculateBenefitAmount(monthlyWage, rule.rate, rule.cap, chunk.days, chunk.daysInMonth);
+  const retroAdjustments = options.retroAdjustments || [];
+  const amount = retroAdjustments.reduce((sum, adjustment) => sum + adjustment.amount, baseAmount);
+  const ruleText = [
+    `${rule.ruleText}${chunk.isPartialMonth ? " 일할" : ""}`,
+    ...retroAdjustments.map((adjustment) => `6+6 ${adjustment.monthNumber}개월차 소급`),
+  ].join(" + ");
+  const amountText = [
+    formatWon(baseAmount),
+    ...retroAdjustments.map((adjustment) => formatWon(adjustment.amount)),
+  ].join(" + ");
+
+  return {
+    owner: chunk.owner,
+    ownerLabel,
+    month: chunk.month,
+    days: chunk.days,
+    monthNumber,
+    ruleText,
+    amount,
+    amountText,
+  };
+}
+
+function createRetroBenefitPart(owner, month, retroAdjustments) {
+  const ownerLabel = BENEFIT_OWNER_LABELS[owner];
+  const amount = retroAdjustments.reduce((sum, adjustment) => sum + adjustment.amount, 0);
+
+  return {
+    owner,
+    ownerLabel,
+    month,
+    days: 0,
+    isRetroOnly: true,
+    ruleText: retroAdjustments
+      .map((adjustment) => `6+6 ${adjustment.monthNumber}개월차 소급`)
+      .join(" + "),
+    amount,
+    amountText: retroAdjustments.map((adjustment) => formatWon(adjustment.amount)).join(" + "),
+  };
+}
+
+function collectBenefitParts(schedule, wages) {
+  const motherChunks = (schedule.motherItems || [])
+    .filter((item) => ["PREG_LEAVE", "POSTNATAL"].includes(item.type))
+    .flatMap((item) => splitItemIntoMonthlyChunks(item, "mother"));
+  const fatherChunks = (schedule.fatherItems || [])
+    .filter((item) => item.type === "FATHER_PARENTAL")
+    .flatMap((item) => splitItemIntoMonthlyChunks(item, "father"));
+  const motherMonthlyChunks = mergeChunksByMonth(motherChunks);
+  const fatherMonthlyChunks = mergeChunksByMonth(fatherChunks);
+  const sixPlusSixMonths = Math.min(motherMonthlyChunks.length, fatherMonthlyChunks.length, SIX_PLUS_SIX_CAPS.length);
+  const parents = {
+    mother: {
+      chunks: motherMonthlyChunks,
+      wage: wages.motherMonthlyWage,
+    },
+    father: {
+      chunks: fatherMonthlyChunks,
+      wage: wages.fatherMonthlyWage,
+    },
+  };
+  const motherFirstDate = motherMonthlyChunks[0]?.startDate;
+  const fatherFirstDate = fatherMonthlyChunks[0]?.startDate;
+  const hasSameStart =
+    motherFirstDate &&
+    fatherFirstDate &&
+    formatDate(parseDate(motherFirstDate)) === formatDate(parseDate(fatherFirstDate));
+  const firstOwner =
+    motherFirstDate && fatherFirstDate && parseDate(fatherFirstDate) < parseDate(motherFirstDate)
+      ? "father"
+      : "mother";
+  const secondOwner = firstOwner === "mother" ? "father" : "mother";
+  const retroAdjustmentsByOwnerMonth = new Map();
+
+  if (sixPlusSixMonths > 0 && !hasSameStart) {
+    const firstParent = parents[firstOwner];
+    const secondParent = parents[secondOwner];
+
+    for (let index = 0; index < sixPlusSixMonths; index += 1) {
+      const firstChunk = firstParent.chunks[index];
+      const secondChunk = secondParent.chunks[index];
+      const monthNumber = index + 1;
+      const generalRule = getBenefitRule(monthNumber, false);
+      const sixPlusSixRule = getBenefitRule(monthNumber, true);
+      const generalAmount = calculateBenefitAmount(
+        firstParent.wage,
+        generalRule.rate,
+        generalRule.cap,
+        firstChunk.days,
+        firstChunk.daysInMonth
+      );
+      const sixPlusSixAmount = calculateBenefitAmount(
+        firstParent.wage,
+        sixPlusSixRule.rate,
+        sixPlusSixRule.cap,
+        firstChunk.days,
+        firstChunk.daysInMonth
+      );
+      const retroAmount = sixPlusSixAmount - generalAmount;
+
+      if (retroAmount > 0) {
+        const key = `${firstOwner}:${secondChunk.month}`;
+        const adjustments = retroAdjustmentsByOwnerMonth.get(key) || [];
+        adjustments.push({ monthNumber, amount: retroAmount });
+        retroAdjustmentsByOwnerMonth.set(key, adjustments);
+      }
+    }
+  }
+
+  const parts = [
+    ...motherMonthlyChunks.map((chunk, index) => {
+      const monthNumber = index + 1;
+      const useSixPlusSix =
+        sixPlusSixMonths > 0 &&
+        monthNumber <= sixPlusSixMonths &&
+        (hasSameStart || secondOwner === "mother");
+      return createBenefitPart(chunk, monthNumber, wages.motherMonthlyWage, {
+        useSixPlusSix,
+        retroAdjustments: retroAdjustmentsByOwnerMonth.get(`mother:${chunk.month}`),
+      });
+    }),
+    ...fatherMonthlyChunks.map((chunk, index) => {
+      const monthNumber = index + 1;
+      const useSixPlusSix =
+        sixPlusSixMonths > 0 &&
+        monthNumber <= sixPlusSixMonths &&
+        (hasSameStart || secondOwner === "father");
+
+      return createBenefitPart(chunk, monthNumber, wages.fatherMonthlyWage, {
+        useSixPlusSix,
+        retroAdjustments: retroAdjustmentsByOwnerMonth.get(`father:${chunk.month}`),
+      });
+    }),
+  ];
+
+  retroAdjustmentsByOwnerMonth.forEach((adjustments, key) => {
+    const [owner, month] = key.split(":");
+    const hasBasePart = parts.some((part) => part.owner === owner && part.month === month);
+
+    if (!hasBasePart) {
+      parts.push(createRetroBenefitPart(owner, month, adjustments));
+    }
+  });
+
+  return parts.sort((a, b) => {
+    if (a.month !== b.month) {
+      return a.month.localeCompare(b.month);
+    }
+
+    return a.owner === "mother" ? -1 : 1;
+  });
+}
+
+function createBenefitRow(month, parts) {
+  const totalAmount = parts.reduce((sum, part) => sum + part.amount, 0);
+  const owner = parts.map((part) => part.ownerLabel).join("+");
+  const leaveDaysText = parts.map((part) => `${part.ownerLabel} ${part.days}일`).join(" + ");
+  const ruleText = parts.length > 1
+    ? parts.map((part) => `${part.ownerLabel} ${part.ruleText}`).join(" + ")
+    : parts[0].ruleText;
+  const amountText = parts.length > 1
+    ? `${parts.map((part) => part.amountText).join(" + ")} = ${formatWon(totalAmount)}`
+    : formatWon(totalAmount);
+
+  return {
+    month,
+    owner,
+    parts,
+    leaveDaysLines: parts.map((part, index) => ({
+      owner: part.owner,
+      text: part.isRetroOnly
+        ? `${part.ownerLabel} 소급`
+        : `${part.ownerLabel} ${part.days}일${index < parts.length - 1 ? " +" : ""}`,
+    })),
+    ruleLines: parts.map((part, index) => ({
+      owner: part.owner,
+      text: `${index > 0 ? "+ " : ""}${parts.length > 1 ? `${part.ownerLabel} ` : ""}${part.ruleText}`,
+    })),
+    amountLines: parts.length > 1
+      ? parts.map((part, index) => ({
+          owner: part.owner,
+          text: `${index > 0 ? "+" : ""}${part.amountText}${index === parts.length - 1 ? ` = ${formatWon(totalAmount)}` : ""}`,
+        }))
+      : [{ owner: parts[0].owner, text: formatWon(totalAmount) }],
+    leaveDaysText,
+    ruleText,
+    amountText,
+    totalAmount,
+  };
+}
+
+function calculateParentalLeaveBenefits(schedule, wages = {}) {
+  const partsByMonth = new Map();
+
+  collectBenefitParts(schedule, wages).forEach((part) => {
+    const parts = partsByMonth.get(part.month) || [];
+    parts.push(part);
+    partsByMonth.set(part.month, parts);
+  });
+
+  const rows = [...partsByMonth.entries()]
+    .sort(([monthA], [monthB]) => monthA.localeCompare(monthB))
+    .map(([month, parts]) => createBenefitRow(month, parts));
+  const totals = rows.reduce(
+    (sum, row) => {
+      row.parts.forEach((part) => {
+        sum[part.owner] += part.amount;
+      });
+      sum.household += row.totalAmount;
+      return sum;
+    },
+    { mother: 0, father: 0, household: 0 }
+  );
+
+  return { rows, totals };
 }
 
 function normalizeSegment(segment) {
@@ -321,15 +855,16 @@ function createInitialState() {
   return {
     dueDate: "2026-12-14",
     totalParentalLeaveDays: 548,
-    nextSegmentId: 4,
-    nextFatherSegmentId: 103,
+    motherMonthlyWage: 5000000,
+    fatherMonthlyWage: 5000000,
+    nextSegmentId: 3,
+    nextFatherSegmentId: 102,
     segments: [
-      { id: 1, type: "PREG_LEAVE", startDate: "2026-05-01", days: 31 },
+      { id: 1, type: "PREG_LEAVE", startDate: "2026-05-01", days: 61 },
       { id: 2, type: "PREG_LEAVE", startDate: "2026-10-01", days: 31 },
     ],
     fatherSegments: [
-      { id: 101, type: "SPOUSE_BIRTH", startDate: "2026-12-14", days: 20 },
-      { id: 102, type: "FATHER_PARENTAL", startDate: "2027-01-30", days: 90 },
+      { id: 101, type: "FATHER_PARENTAL", startDate: "2027-03-01", days: 122 },
     ],
   };
 }
@@ -337,6 +872,9 @@ function createInitialState() {
 function initApp() {
   const state = createInitialState();
   const elements = {
+    tabButtons: document.querySelectorAll("[data-tab-target]"),
+    tabPanels: document.querySelectorAll("[data-tab-panel]"),
+    leaveSummary: document.querySelector("[data-leave-summary]"),
     dueDate: document.querySelector("#dueDate"),
     quotaInputs: document.querySelectorAll("input[name='quota']"),
     segmentList: document.querySelector("#segmentList"),
@@ -348,6 +886,12 @@ function initApp() {
     timeline: document.querySelector("#timeline"),
     timelineBoundaries: document.querySelector("#timelineBoundaries"),
     eligibilityCard: document.querySelector("#eligibilityCard"),
+    motherMonthlyWage: document.querySelector("#motherMonthlyWage"),
+    fatherMonthlyWage: document.querySelector("#fatherMonthlyWage"),
+    motherBenefitTotal: document.querySelector("#motherBenefitTotal"),
+    fatherBenefitTotal: document.querySelector("#fatherBenefitTotal"),
+    householdBenefitTotal: document.querySelector("#householdBenefitTotal"),
+    benefitBody: document.querySelector("#benefitBody"),
     scheduleBody: document.querySelector("#scheduleBody"),
     scheduleCards: document.querySelector("#scheduleCards"),
     warningBox: document.querySelector("#warningBox"),
@@ -355,7 +899,122 @@ function initApp() {
     remainingDays: document.querySelector("#remainingDays"),
     returnDate: document.querySelector("#returnDate"),
     requestText: document.querySelector("#requestText"),
+    insuranceChecklistSections: document.querySelector("#insuranceChecklistSections"),
+    insuranceProgressText: document.querySelector("#insuranceProgressText"),
+    insuranceRequiredRemaining: document.querySelector("#insuranceRequiredRemaining"),
+    insuranceQuestionsReady: document.querySelector("#insuranceQuestionsReady"),
+    insuranceProgressBar: document.querySelector("#insuranceProgressBar"),
+    insuranceQuestionList: document.querySelector("#insuranceQuestionList"),
   };
+  let insuranceCheckedIds = loadInsuranceChecklistState();
+
+  function loadInsuranceChecklistState() {
+    try {
+      const rawValue = localStorage.getItem(INSURANCE_CHECKLIST_STORAGE_KEY);
+      return normalizeInsuranceChecklistState(JSON.parse(rawValue || "[]"));
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function saveInsuranceChecklistState() {
+    try {
+      localStorage.setItem(INSURANCE_CHECKLIST_STORAGE_KEY, JSON.stringify(insuranceCheckedIds));
+    } catch (error) {
+      // Browsers can block storage in private or restricted contexts; the checklist still works in memory.
+    }
+  }
+
+  function setActiveTab(tabName) {
+    elements.tabButtons.forEach((button) => {
+      const isActive = button.dataset.tabTarget === tabName;
+      button.classList.toggle("active", isActive);
+      button.setAttribute("aria-selected", String(isActive));
+    });
+
+    elements.tabPanels.forEach((panel) => {
+      panel.hidden = panel.dataset.tabPanel !== tabName;
+    });
+
+    if (elements.leaveSummary) {
+      elements.leaveSummary.hidden = tabName !== "leave";
+    }
+  }
+
+  function createInsuranceBadge(item) {
+    const badge = document.createElement("span");
+    const badgeType = item.kind === "question" ? "question" : item.required ? "" : "optional";
+    badge.className = `priority-badge ${badgeType}`.trim();
+    badge.textContent = item.priority || (item.required ? "필수" : "선택");
+    return badge;
+  }
+
+  function createInsuranceChecklistItem(item, checkedSet) {
+    const label = document.createElement("label");
+    label.className = "checklist-item";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = item.id;
+    checkbox.checked = checkedSet.has(item.id);
+    checkbox.dataset.insuranceItem = item.id;
+
+    const copy = document.createElement("div");
+    copy.className = "checklist-copy";
+
+    const title = document.createElement("strong");
+    title.textContent = item.title;
+
+    const description = document.createElement("p");
+    description.textContent = item.description;
+
+    copy.append(createInsuranceBadge(item), title, description);
+    label.append(checkbox, copy);
+    return label;
+  }
+
+  function renderInsuranceChecklist() {
+    const checkedSet = new Set(insuranceCheckedIds);
+    const progress = calculateInsuranceProgress(INSURANCE_CHECKLIST_SECTIONS, insuranceCheckedIds);
+
+    elements.insuranceProgressText.textContent = `${progress.checkedCount}/${progress.totalCount}`;
+    elements.insuranceRequiredRemaining.textContent = `${progress.requiredRemaining}개`;
+    elements.insuranceQuestionsReady.textContent = progress.questionsReady ? "준비 완료" : "준비 전";
+    elements.insuranceProgressBar.style.width = `${progress.percent}%`;
+    elements.insuranceChecklistSections.innerHTML = "";
+    elements.insuranceQuestionList.innerHTML = "";
+
+    INSURANCE_CHECKLIST_SECTIONS.forEach((section) => {
+      const sectionElement = document.createElement("article");
+      sectionElement.className = "checklist-section";
+
+      const heading = document.createElement("div");
+      heading.className = "section-heading";
+      heading.innerHTML = `
+        <div>
+          <p class="eyebrow">${section.eyebrow}</p>
+          <h3>${section.title}</h3>
+        </div>
+      `;
+
+      const itemsElement = document.createElement("div");
+      itemsElement.className = "checklist-items";
+      section.items.forEach((item) => {
+        itemsElement.append(createInsuranceChecklistItem(item, checkedSet));
+      });
+
+      sectionElement.append(heading, itemsElement);
+      elements.insuranceChecklistSections.append(sectionElement);
+    });
+
+    getInsuranceChecklistItems()
+      .filter((item) => item.kind === "question")
+      .forEach((item) => {
+        const listItem = document.createElement("li");
+        listItem.textContent = item.title;
+        elements.insuranceQuestionList.append(listItem);
+      });
+  }
 
   function renderSegmentControls() {
     elements.segmentList.innerHTML = "";
@@ -560,6 +1219,91 @@ function initApp() {
     `;
   }
 
+  function renderBenefitTable(schedule) {
+    const benefit = calculateParentalLeaveBenefits(schedule, {
+      motherMonthlyWage: state.motherMonthlyWage,
+      fatherMonthlyWage: state.fatherMonthlyWage,
+    });
+
+    elements.motherBenefitTotal.textContent = formatWon(benefit.totals.mother);
+    elements.fatherBenefitTotal.textContent = formatWon(benefit.totals.father);
+    elements.householdBenefitTotal.textContent = formatWon(benefit.totals.household);
+    elements.benefitBody.innerHTML = "";
+
+    benefit.rows.forEach((item) => {
+      const row = document.createElement("tr");
+      const monthCell = document.createElement("td");
+      monthCell.textContent = item.month;
+      row.append(monthCell);
+
+      const ownerCell = document.createElement("td");
+      ownerCell.className = "benefit-owner-cell";
+      [...new Set(item.parts.map((part) => part.owner))].forEach((owner, index, owners) => {
+        const ownerLine = document.createElement("div");
+        ownerLine.className = "benefit-owner-line";
+
+        if (index > 0) {
+          const plus = document.createElement("span");
+          plus.className = "benefit-owner-plus";
+          plus.textContent = "+";
+          ownerLine.append(plus);
+        }
+
+        const badge = document.createElement("span");
+        badge.className = `benefit-owner-badge ${owner}`;
+        badge.textContent = BENEFIT_OWNER_LABELS[owner];
+        ownerLine.append(badge);
+        ownerCell.append(ownerLine);
+      });
+      row.append(ownerCell);
+
+      [item.leaveDaysLines, item.ruleLines].forEach((lines) => {
+        const cell = document.createElement("td");
+
+        lines.forEach((line) => {
+          const lineElement = document.createElement("div");
+          lineElement.className = `benefit-line ${line.owner}`;
+          lineElement.textContent = line.text;
+          cell.append(lineElement);
+        });
+
+        row.append(cell);
+      });
+
+      const amountCell = document.createElement("td");
+      amountCell.className = "benefit-amount-cell";
+
+      item.amountLines.forEach((line, index) => {
+        const lineElement = document.createElement("div");
+        lineElement.className = `benefit-line ${line.owner}`;
+
+        if (line.text.includes(" = ")) {
+          const [detail, total] = line.text.split(" = ");
+          lineElement.append(document.createTextNode(`${detail} = `));
+
+          const totalElement = document.createElement("strong");
+          totalElement.textContent = total;
+          lineElement.append(totalElement);
+        } else {
+          lineElement.textContent = line.text;
+
+          if (item.amountLines.length === 1) {
+            const totalElement = document.createElement("strong");
+            totalElement.textContent = line.text;
+            lineElement.textContent = "";
+            lineElement.append(totalElement);
+          }
+        }
+
+        amountCell.append(lineElement);
+      });
+
+      row.append(amountCell);
+
+      elements.benefitBody.append(row);
+    });
+  }
+
   function renderSummary(schedule) {
     elements.usedDays.textContent = `${schedule.usedParentalLeaveDays}일`;
     elements.remainingDays.textContent =
@@ -582,12 +1326,15 @@ function initApp() {
     renderTimeline(schedule);
     renderTable(schedule);
     renderEligibility(schedule);
+    renderBenefitTable(schedule);
     renderSummary(schedule);
     renderRequestText(schedule);
   }
 
   function render() {
     elements.dueDate.value = state.dueDate;
+    elements.motherMonthlyWage.value = state.motherMonthlyWage;
+    elements.fatherMonthlyWage.value = state.fatherMonthlyWage;
     elements.quotaInputs.forEach((input) => {
       input.checked = Number(input.value) === state.totalParentalLeaveDays;
     });
@@ -602,10 +1349,34 @@ function initApp() {
     render();
   });
 
+  elements.motherMonthlyWage.addEventListener("input", (event) => {
+    state.motherMonthlyWage = Math.max(0, Number(event.target.value) || 0);
+    renderOutputs();
+  });
+
+  elements.motherMonthlyWage.addEventListener("focusout", () => {
+    render();
+  });
+
+  elements.fatherMonthlyWage.addEventListener("input", (event) => {
+    state.fatherMonthlyWage = Math.max(0, Number(event.target.value) || 0);
+    renderOutputs();
+  });
+
+  elements.fatherMonthlyWage.addEventListener("focusout", () => {
+    render();
+  });
+
   elements.quotaInputs.forEach((input) => {
     input.addEventListener("change", (event) => {
       state.totalParentalLeaveDays = Number(event.target.value);
       render();
+    });
+  });
+
+  elements.tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      setActiveTab(button.dataset.tabTarget);
     });
   });
 
@@ -734,6 +1505,25 @@ function initApp() {
     render();
   });
 
+  elements.insuranceChecklistSections.addEventListener("change", (event) => {
+    const itemId = event.target.dataset.insuranceItem;
+
+    if (!itemId) {
+      return;
+    }
+
+    if (event.target.checked) {
+      insuranceCheckedIds = normalizeInsuranceChecklistState([...insuranceCheckedIds, itemId]);
+    } else {
+      insuranceCheckedIds = insuranceCheckedIds.filter((id) => id !== itemId);
+    }
+
+    saveInsuranceChecklistState();
+    renderInsuranceChecklist();
+  });
+
+  setActiveTab("leave");
+  renderInsuranceChecklist();
   render();
 }
 
@@ -743,9 +1533,14 @@ if (typeof document !== "undefined") {
 
 if (typeof module !== "undefined") {
   module.exports = {
+    INSURANCE_CHECKLIST_SECTIONS,
+    INSURANCE_CHECKLIST_STORAGE_KEY,
     addDays,
     addBusinessDays,
+    calculateInsuranceProgress,
+    calculateParentalLeaveBenefits,
     calculateSchedule,
     differenceInInclusiveDays,
+    normalizeInsuranceChecklistState,
   };
 }
