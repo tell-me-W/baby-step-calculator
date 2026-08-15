@@ -216,6 +216,7 @@ main,
 }
 
 .field,
+.maternity-settings,
 .quota-toggle {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -224,6 +225,8 @@ main,
 }
 
 .field span,
+.maternity-settings legend,
+.maternity-settings label span,
 .quota-toggle legend,
 .segment-row label span {
   color: var(--muted);
@@ -234,6 +237,45 @@ main,
 .field {
   display: grid;
   gap: 8px;
+}
+
+.maternity-settings {
+  display: grid;
+  gap: 10px;
+}
+
+.maternity-settings legend {
+  padding: 0 4px;
+}
+
+.maternity-day-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.maternity-day-fields label {
+  display: grid;
+  grid-template-columns: auto minmax(70px, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.maternity-day-fields input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdfb;
+  color: var(--text);
+  padding: 9px 10px;
+}
+
+.maternity-settings p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .field input,
@@ -864,6 +906,26 @@ textarea {
   line-height: 1.5;
 }
 
+.eligibility-card .eligibility-deadline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.eligibility-card .eligibility-deadline strong {
+  font-size: 18px;
+}
+
+.eligibility-card .eligibility-deadline small {
+  width: 100%;
+  opacity: 0.78;
+  font-size: 11px;
+}
+
 @media (min-width: 900px) {
   main,
   .app-header,
@@ -899,7 +961,7 @@ textarea {
   }
 
   .control-grid {
-    grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.4fr);
+    grid-template-columns: minmax(190px, 0.8fr) minmax(330px, 1.4fr) minmax(280px, 1.2fr);
   }
 
   .button-row {

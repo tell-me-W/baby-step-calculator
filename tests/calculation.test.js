@@ -10,7 +10,17 @@ const {
   calculateInsuranceProgress,
   calculateParentalLeaveBenefits,
   normalizeInsuranceChecklistState,
+  createInitialState,
 } = require("../app.js");
+
+test("uses the requested maternity and second pregnancy leave defaults", () => {
+  const state = createInitialState();
+
+  assert.equal(state.maternityPrenatalDays, 20);
+  assert.equal(state.maternityPostnatalDays, 70);
+  assert.equal(state.segments[1].startDate, "2026-10-01");
+  assert.equal(state.segments[1].days, 80);
+});
 
 test("anchors maternity leave 45 days before due date for a 90 day leave", () => {
   const schedule = calculateSchedule({
@@ -23,6 +33,60 @@ test("anchors maternity leave 45 days before due date for a 90 day leave", () =>
 
   assert.equal(maternity.startDate, "2026-11-01");
   assert.equal(maternity.endDate, "2027-01-29");
+  assert.equal(maternity.days, 90);
+});
+
+test("uses configurable prenatal and postnatal maternity leave days", () => {
+  const schedule = calculateSchedule({
+    dueDate: "2026-12-16",
+    maternityPrenatalDays: 30,
+    maternityPostnatalDays: 60,
+    totalParentalLeaveDays: 365,
+    segments: [],
+  });
+
+  const maternity = schedule.items.find((item) => item.type === "MATERNITY");
+
+  assert.equal(maternity.startDate, "2026-11-16");
+  assert.equal(maternity.endDate, "2027-02-13");
+  assert.equal(maternity.days, 90);
+  assert.equal(schedule.maternityPrenatalDays, 30);
+  assert.equal(schedule.maternityPostnatalDays, 60);
+});
+
+test("guarantees at least 45 postnatal maternity leave days", () => {
+  const schedule = calculateSchedule({
+    dueDate: "2026-12-16",
+    maternityPrenatalDays: 50,
+    maternityPostnatalDays: 20,
+    totalParentalLeaveDays: 365,
+    segments: [],
+  });
+
+  const maternity = schedule.items.find((item) => item.type === "MATERNITY");
+
+  assert.equal(maternity.startDate, "2026-11-01");
+  assert.equal(maternity.endDate, "2027-01-29");
+  assert.equal(maternity.days, 90);
+  assert.equal(schedule.maternityPrenatalDays, 45);
+  assert.equal(schedule.maternityPostnatalDays, 45);
+  assert.equal(schedule.warnings.includes("출산 후 휴가는 법정 최소 45일로 조정했습니다."), true);
+});
+
+test("derives postnatal days from a prenatal-only maternity leave setting", () => {
+  const schedule = calculateSchedule({
+    dueDate: "2026-12-16",
+    maternityPrenatalDays: 20,
+    totalParentalLeaveDays: 365,
+    segments: [],
+  });
+
+  const maternity = schedule.items.find((item) => item.type === "MATERNITY");
+
+  assert.equal(schedule.maternityPrenatalDays, 20);
+  assert.equal(schedule.maternityPostnatalDays, 70);
+  assert.equal(maternity.startDate, "2026-11-26");
+  assert.equal(maternity.endDate, "2027-02-23");
   assert.equal(maternity.days, 90);
 });
 
@@ -198,6 +262,7 @@ test("father 90th parental leave day must happen before mother's 365th parental 
   });
 
   assert.equal(onTime.eligibility.mother365thParentalLeaveDate, "2028-01-29");
+  assert.equal(onTime.eligibility.latestFatherParentalLeaveStartDate, "2027-11-01");
   assert.equal(onTime.eligibility.father90thParentalLeaveDate, "2027-04-29");
   assert.equal(onTime.eligibility.father90thBeforeMother365th, true);
   assert.equal(late.eligibility.father90thBeforeMother365th, false);
