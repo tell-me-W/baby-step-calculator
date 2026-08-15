@@ -26,155 +26,17 @@ const SEGMENT_CLASSES = {
   FATHER_PARENTAL: "father-parental",
 };
 
-const INSURANCE_CHECKLIST_STORAGE_KEY = "babyStep.insuranceChecklist.v1";
-
-const INSURANCE_CHECKLIST_SECTIONS = [
-  {
-    id: "basics",
-    title: "기본 이해",
-    eyebrow: "Structure",
-    items: [
-      {
-        id: "understand-insurance-structure",
-        title: "태아보험은 어린이보험에 태아가입특약/산모특약을 붙이는 구조인지 확인",
-        description: "별도 보험이라기보다 출생을 전제로 한 어린이보험 설계라는 점을 먼저 잡습니다.",
-        required: true,
-        priority: "필수",
-      },
-      {
-        id: "confirm-after-birth-coverage",
-        title: "핵심 보장이 대체로 출생 후 아이에게 발생한 위험 중심인지 확인",
-        description: "임신 중 초음파나 정밀검사 비용이 아이 보험으로 바로 보장된다고 보지 않습니다.",
-        required: true,
-        priority: "필수",
-      },
-    ],
-  },
-  {
-    id: "timing-disclosure",
-    title: "가입 타이밍/고지",
-    eyebrow: "Timing",
-    items: [
-      {
-        id: "review-before-screenings",
-        title: "1차 기형아 검사 전후로 설계안 비교를 시작",
-        description: "검사 이후 이상 소견이나 추가검사 권유가 생기면 조건이 달라질 수 있습니다.",
-        required: true,
-        priority: "필수",
-      },
-      {
-        id: "confirm-week-22-riders",
-        title: "핵심 태아특약 가입 가능 주수와 22주 전 완료 필요 여부 확인",
-        description: "보험사별로 태아 관련 특약의 가입 가능 주수가 다를 수 있습니다.",
-        required: true,
-        priority: "필수",
-      },
-      {
-        id: "prepare-disclosure-notes",
-        title: "산모 병력, 약 복용, 검사소견, 난임시술, 다태아 여부를 고지용으로 정리",
-        description: "청약서 질문표에 맞춰 사실대로 답할 수 있도록 상담 전 메모를 준비합니다.",
-        required: true,
-        priority: "필수",
-      },
-    ],
-  },
-  {
-    id: "core-coverage",
-    title: "핵심 보장",
-    eyebrow: "Coverage",
-    items: [
-      {
-        id: "check-child-medical-indemnity",
-        title: "어린이 실손의료보험 포함 여부 확인",
-        description: "출생 후 실제 치료비 부담을 줄이는 기본 축으로 봅니다.",
-        required: true,
-        priority: "필수",
-      },
-      {
-        id: "check-congenital-coverage",
-        title: "선천이상 진단비/수술비/입원비 범위 확인",
-        description: "선천이상 분류, 질병코드, 지급 제외 조건을 약관 기준으로 봅니다.",
-        required: true,
-        priority: "필수",
-      },
-      {
-        id: "check-low-weight-nicu",
-        title: "저체중아·미숙아·NICU/인큐베이터 담보 확인",
-        description: "입원일당 시작일, 지급 한도, 인큐베이터 조건을 함께 확인합니다.",
-        required: true,
-        priority: "필수",
-      },
-      {
-        id: "check-newborn-disease",
-        title: "신생아/주산기 질환 입원·수술 담보 확인",
-        description: "황달, 호흡곤란, 감염처럼 출생 직후 생길 수 있는 입원 위험을 봅니다.",
-        required: true,
-        priority: "필수",
-      },
-    ],
-  },
-  {
-    id: "comparison",
-    title: "비교 포인트",
-    eyebrow: "Compare",
-    items: [
-      {
-        id: "ask-maturity-difference",
-        title: "30세 만기와 100세 만기의 보험료/전환 조건 차이 질문",
-        description: "초기 보험료와 장기 유지 가능성을 같이 비교합니다.",
-        kind: "question",
-        priority: "질문",
-      },
-      {
-        id: "ask-renewal-type",
-        title: "갱신형/비갱신형, 납입기간, 만기별 총보험료 질문",
-        description: "월 보험료만 보지 말고 오래 유지할 때의 부담을 확인합니다.",
-        kind: "question",
-        priority: "질문",
-      },
-      {
-        id: "ask-waiting-reduction",
-        title: "면책기간, 감액기간, 지급 제한 사유 질문",
-        description: "가입 직후 보장 제한과 보험금 지급 예외를 확인합니다.",
-        kind: "question",
-        priority: "질문",
-      },
-      {
-        id: "ask-hospitalization-conditions",
-        title: "입원일당 지급 조건과 NICU 포함 여부 질문",
-        description: "며칠째부터 지급되는지, 일반입원/NICU 조건이 다른지 확인합니다.",
-        kind: "question",
-        priority: "질문",
-      },
-    ],
-  },
-  {
-    id: "optional-riders",
-    title: "선택 항목",
-    eyebrow: "Optional",
-    items: [
-      {
-        id: "review-mother-riders",
-        title: "산모특약은 산모 기존 보장과 예산을 보고 선택",
-        description: "임신중독증, 임신성 당뇨, 유산수술비, 입원일당 등을 별도로 검토합니다.",
-        priority: "선택",
-      },
-      {
-        id: "review-major-disease",
-        title: "중대질병 진단비는 핵심 보장 이후 예산이 남을 때 검토",
-        description: "큰 위험 대비 목적은 분명하지만 보험료 영향도 같이 봅니다.",
-        priority: "선택",
-      },
-      {
-        id: "trim-lifestyle-riders",
-        title: "독감, 수족구, 골절, 응급실 등 생활형 특약은 과다 구성 여부 점검",
-        description: "체감은 좋지만 보험료 대비 우선순위는 낮게 둡니다.",
-        priority: "선택",
-      },
-    ],
-  },
-];
-
+const INSURANCE_DATA_SOURCE =
+  typeof module !== "undefined" && module.exports
+    ? require("./insurance-data.js")
+    : window.INSURANCE_DATA;
+const INSURANCE_PLAN_META = INSURANCE_DATA_SOURCE.meta;
+const INSURANCE_CHECKLIST_SECTIONS = INSURANCE_DATA_SOURCE.sections;
+const INSURANCE_PLAN_LABELS = {
+  economy: "실속",
+  standard: "표준",
+  premium: "고급",
+};
 const BENEFIT_OWNER_LABELS = {
   mother: "아내",
   father: "남편",
@@ -190,44 +52,6 @@ const GENERAL_BENEFIT_RULES = [
 
 function getInsuranceChecklistItems(sections = INSURANCE_CHECKLIST_SECTIONS) {
   return sections.flatMap((section) => section.items || []);
-}
-
-function normalizeInsuranceChecklistState(value, sections = INSURANCE_CHECKLIST_SECTIONS) {
-  const knownIds = new Set(getInsuranceChecklistItems(sections).map((item) => item.id));
-  const seen = new Set();
-  const source = Array.isArray(value) ? value : [];
-
-  return source.filter((id) => {
-    if (!knownIds.has(id) || seen.has(id)) {
-      return false;
-    }
-
-    seen.add(id);
-    return true;
-  });
-}
-
-function calculateInsuranceProgress(sections = INSURANCE_CHECKLIST_SECTIONS, checkedIds = []) {
-  const items = getInsuranceChecklistItems(sections);
-  const normalizedCheckedIds = normalizeInsuranceChecklistState(checkedIds, sections);
-  const checkedSet = new Set(normalizedCheckedIds);
-  const requiredItems = items.filter((item) => item.required);
-  const questionItems = items.filter((item) => item.kind === "question");
-  const requiredCheckedCount = requiredItems.filter((item) => checkedSet.has(item.id)).length;
-  const questionCheckedCount = questionItems.filter((item) => checkedSet.has(item.id)).length;
-  const checkedCount = normalizedCheckedIds.length;
-
-  return {
-    totalCount: items.length,
-    checkedCount,
-    percent: items.length > 0 ? Math.round((checkedCount / items.length) * 100) : 0,
-    requiredCount: requiredItems.length,
-    requiredCheckedCount,
-    requiredRemaining: requiredItems.length - requiredCheckedCount,
-    questionCount: questionItems.length,
-    questionCheckedCount,
-    questionsReady: questionItems.length > 0 && questionCheckedCount === questionItems.length,
-  };
 }
 
 function parseDate(value) {
@@ -950,30 +774,21 @@ function initApp() {
     returnDate: document.querySelector("#returnDate"),
     requestText: document.querySelector("#requestText"),
     insuranceChecklistSections: document.querySelector("#insuranceChecklistSections"),
-    insuranceProgressText: document.querySelector("#insuranceProgressText"),
-    insuranceRequiredRemaining: document.querySelector("#insuranceRequiredRemaining"),
-    insuranceQuestionsReady: document.querySelector("#insuranceQuestionsReady"),
-    insuranceProgressBar: document.querySelector("#insuranceProgressBar"),
+    insuranceKeepCount: document.querySelector("#insuranceKeepCount"),
+    insuranceRequiredCount: document.querySelector("#insuranceRequiredCount"),
+    insurancePlanPremium: document.querySelector("#insurancePlanPremium"),
+    insurancePremiumLabel: document.querySelector("#insurancePremiumLabel"),
     insuranceQuestionList: document.querySelector("#insuranceQuestionList"),
+    insurancePlanSelect: document.querySelector("#insurancePlanSelect"),
+    insuranceContractSummary: document.querySelector("#insuranceContractSummary"),
+    insuranceSearchInput: document.querySelector("#insuranceSearchInput"),
+    insuranceFilterButtons: document.querySelectorAll("[data-insurance-filter]"),
+    insuranceVisibleCount: document.querySelector("#insuranceVisibleCount"),
+    insuranceEmptyState: document.querySelector("#insuranceEmptyState"),
   };
-  let insuranceCheckedIds = loadInsuranceChecklistState();
-
-  function loadInsuranceChecklistState() {
-    try {
-      const rawValue = localStorage.getItem(INSURANCE_CHECKLIST_STORAGE_KEY);
-      return normalizeInsuranceChecklistState(JSON.parse(rawValue || "[]"));
-    } catch (error) {
-      return [];
-    }
-  }
-
-  function saveInsuranceChecklistState() {
-    try {
-      localStorage.setItem(INSURANCE_CHECKLIST_STORAGE_KEY, JSON.stringify(insuranceCheckedIds));
-    } catch (error) {
-      // Browsers can block storage in private or restricted contexts; the checklist still works in memory.
-    }
-  }
+  let selectedInsurancePlan = "standard";
+  let insuranceDecisionFilter = "all";
+  let insuranceSearchValue = "";
 
   function setActiveTab(tabName) {
     elements.tabButtons.forEach((button) => {
@@ -993,79 +808,208 @@ function initApp() {
 
   function createInsuranceBadge(item) {
     const badge = document.createElement("span");
-    const badgeType = item.kind === "question" ? "question" : item.required ? "" : "optional";
-    badge.className = `priority-badge ${badgeType}`.trim();
-    badge.textContent = item.priority || (item.required ? "필수" : "선택");
+    const badgeType =
+      item.decision === "필수가입" ? "required" : item.decision === "유지" ? "keep" : "remove";
+    badge.className = `priority-badge ${badgeType}`;
+    badge.textContent = item.decision;
     return badge;
   }
 
-  function createInsuranceChecklistItem(item, checkedSet) {
-    const label = document.createElement("label");
-    label.className = "checklist-item";
+  function createInsuranceDetail(label, value, className = "") {
+    const row = document.createElement("div");
+    row.className = `insurance-item-detail ${className}`.trim();
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.value = item.id;
-    checkbox.checked = checkedSet.has(item.id);
-    checkbox.dataset.insuranceItem = item.id;
+    const term = document.createElement("span");
+    term.textContent = label;
+
+    const description = document.createElement("strong");
+    description.textContent = value || "-";
+
+    row.append(term, description);
+    return row;
+  }
+
+  function createInsuranceChecklistItem(item) {
+    const card = document.createElement("article");
+    const decisionClass =
+      item.decision === "필수가입" ? "required" : item.decision === "유지" ? "keep" : "remove";
+    card.className = `checklist-item decision-${decisionClass}`;
 
     const copy = document.createElement("div");
     copy.className = "checklist-copy";
 
+    const meta = document.createElement("div");
+    meta.className = "insurance-item-meta";
+
+    const code = document.createElement("span");
+    code.className = "insurance-code";
+    code.textContent = item.code;
+    meta.append(createInsuranceBadge(item), code);
+
     const title = document.createElement("strong");
+    title.className = "insurance-item-title";
     title.textContent = item.title;
 
-    const description = document.createElement("p");
-    description.textContent = item.description;
+    const details = document.createElement("div");
+    details.className = "insurance-item-details";
+    details.append(
+      createInsuranceDetail(
+        `${INSURANCE_PLAN_LABELS[selectedInsurancePlan]} 가입금액`,
+        item.plans[selectedInsurancePlan],
+        "plan-value"
+      ),
+      createInsuranceDetail("권장 조정", item.recommendation)
+    );
 
-    copy.append(createInsuranceBadge(item), title, description);
-    label.append(checkbox, copy);
-    return label;
+    if (item.monthlyCost !== null) {
+      details.append(createInsuranceDetail("월 보험료 참고", formatWon(item.monthlyCost)));
+    }
+
+    if (item.note) {
+      const note = document.createElement("p");
+      note.className = "insurance-item-note";
+      note.textContent = item.note;
+      details.append(note);
+    }
+
+    copy.append(meta, title, details);
+    card.append(copy);
+    return card;
+  }
+
+  function renderInsuranceContractSummary() {
+    const contractItems = [
+      ["보험 기간", INSURANCE_PLAN_META.contract.period],
+      ["납입 기간", INSURANCE_PLAN_META.contract.paymentPeriod],
+      ["환급 방식", INSURANCE_PLAN_META.contract.refundType],
+      ["납입 방식", INSURANCE_PLAN_META.contract.paymentMethod],
+    ];
+
+    elements.insuranceContractSummary.innerHTML = "";
+    contractItems.forEach(([label, value]) => {
+      const wrapper = document.createElement("div");
+      const term = document.createElement("dt");
+      const description = document.createElement("dd");
+      term.textContent = label;
+      description.textContent = value;
+      wrapper.append(term, description);
+      elements.insuranceContractSummary.append(wrapper);
+    });
+  }
+
+  function getFilteredInsuranceSections() {
+    const searchValue = insuranceSearchValue.trim().toLocaleLowerCase("ko-KR");
+
+    return INSURANCE_CHECKLIST_SECTIONS.map((section) => ({
+      ...section,
+      items: section.items.filter((item) => {
+        const matchesDecision =
+          insuranceDecisionFilter === "all" || item.decision === insuranceDecisionFilter;
+        const haystack = `${item.code} ${item.title} ${item.recommendation} ${item.note}`
+          .toLocaleLowerCase("ko-KR");
+        return matchesDecision && (!searchValue || haystack.includes(searchValue));
+      }),
+    })).filter((section) => section.items.length > 0);
+  }
+
+  function renderInsuranceAttentionList() {
+    const attentionItems = getInsuranceChecklistItems()
+      .filter(
+        (item) =>
+          item.recommendation.includes("확인") ||
+          item.recommendation.includes("결정") ||
+          item.recommendation.includes("감액")
+      )
+      .slice(0, 8);
+
+    elements.insuranceQuestionList.innerHTML = "";
+    attentionItems.forEach((item) => {
+      const listItem = document.createElement("li");
+      const title = document.createElement("strong");
+      const detail = document.createElement("span");
+      title.textContent = item.title;
+      detail.textContent = item.recommendation;
+      listItem.append(title, detail);
+      elements.insuranceQuestionList.append(listItem);
+    });
   }
 
   function renderInsuranceChecklist() {
-    const checkedSet = new Set(insuranceCheckedIds);
-    const progress = calculateInsuranceProgress(INSURANCE_CHECKLIST_SECTIONS, insuranceCheckedIds);
+    const allItems = getInsuranceChecklistItems();
+    const decisionCounts = allItems.reduce(
+      (counts, item) => {
+        counts[item.decision] = (counts[item.decision] || 0) + 1;
+        return counts;
+      },
+      { 유지: 0, 제거: 0, 필수가입: 0 }
+    );
+    const filteredSections = getFilteredInsuranceSections();
+    const visibleCount = getInsuranceChecklistItems(filteredSections).length;
+    const selectedPlanMeta = INSURANCE_PLAN_META.premiums[selectedInsurancePlan];
 
-    elements.insuranceProgressText.textContent = `${progress.checkedCount}/${progress.totalCount}`;
-    elements.insuranceRequiredRemaining.textContent = `${progress.requiredRemaining}개`;
-    elements.insuranceQuestionsReady.textContent = progress.questionsReady ? "준비 완료" : "준비 전";
-    elements.insuranceProgressBar.style.width = `${progress.percent}%`;
+    elements.insuranceKeepCount.textContent = `${decisionCounts.유지}개`;
+    elements.insuranceRequiredCount.textContent = `${decisionCounts.필수가입}개`;
+    elements.insurancePremiumLabel.textContent =
+      `${INSURANCE_PLAN_LABELS[selectedInsurancePlan]} 출생 후 보험료`;
+    elements.insurancePlanPremium.textContent = selectedPlanMeta?.afterBirth
+      ? formatWon(selectedPlanMeta.afterBirth)
+      : "시트 미기재";
+    elements.insuranceVisibleCount.textContent =
+      `전체 ${allItems.length}개 중 ${visibleCount}개 담보를 표시합니다.`;
+    elements.insuranceFilterButtons.forEach((button) => {
+      const filter = button.dataset.insuranceFilter;
+      const label = filter === "all" ? "전체" : filter;
+      const count = filter === "all" ? allItems.length : decisionCounts[filter] || 0;
+      button.textContent = `${label} ${count}`;
+    });
     elements.insuranceChecklistSections.innerHTML = "";
-    elements.insuranceQuestionList.innerHTML = "";
+    elements.insuranceEmptyState.hidden = visibleCount > 0;
 
-    INSURANCE_CHECKLIST_SECTIONS.forEach((section) => {
+    renderInsuranceContractSummary();
+    renderInsuranceAttentionList();
+
+    filteredSections.forEach((section) => {
       const sectionElement = document.createElement("article");
       sectionElement.className = "checklist-section";
 
       const heading = document.createElement("div");
-      heading.className = "section-heading";
-      heading.innerHTML = `
-        <div>
-          <p class="eyebrow">${section.eyebrow}</p>
-          <h3>${section.title}</h3>
-        </div>
-      `;
+      heading.className = "insurance-section-heading";
+
+      const headingCopy = document.createElement("div");
+      const eyebrow = document.createElement("p");
+      const title = document.createElement("h3");
+      eyebrow.className = "eyebrow";
+      eyebrow.textContent = section.eyebrow;
+      title.textContent = section.title;
+      headingCopy.append(eyebrow, title);
+
+      const count = document.createElement("span");
+      count.className = "insurance-section-count";
+      const sectionDecisionCounts = section.items.reduce(
+        (counts, item) => {
+          counts[item.decision] = (counts[item.decision] || 0) + 1;
+          return counts;
+        },
+        { 유지: 0, 제거: 0, 필수가입: 0 }
+      );
+      const sectionCountParts = [
+        sectionDecisionCounts.필수가입 > 0 ? `필수 ${sectionDecisionCounts.필수가입}` : "",
+        sectionDecisionCounts.유지 > 0 ? `유지 ${sectionDecisionCounts.유지}` : "",
+        sectionDecisionCounts.제거 > 0 ? `제거 ${sectionDecisionCounts.제거}` : "",
+      ].filter(Boolean);
+      count.textContent = sectionCountParts.join(" · ");
+      heading.append(headingCopy, count);
 
       const itemsElement = document.createElement("div");
       itemsElement.className = "checklist-items";
       section.items.forEach((item) => {
-        itemsElement.append(createInsuranceChecklistItem(item, checkedSet));
+        itemsElement.append(createInsuranceChecklistItem(item));
       });
 
       sectionElement.append(heading, itemsElement);
       elements.insuranceChecklistSections.append(sectionElement);
     });
-
-    getInsuranceChecklistItems()
-      .filter((item) => item.kind === "question")
-      .forEach((item) => {
-        const listItem = document.createElement("li");
-        listItem.textContent = item.title;
-        elements.insuranceQuestionList.append(listItem);
-      });
   }
-
   function renderSegmentControls() {
     elements.segmentList.innerHTML = "";
 
@@ -1617,21 +1561,26 @@ function initApp() {
     render();
   });
 
-  elements.insuranceChecklistSections.addEventListener("change", (event) => {
-    const itemId = event.target.dataset.insuranceItem;
-
-    if (!itemId) {
-      return;
-    }
-
-    if (event.target.checked) {
-      insuranceCheckedIds = normalizeInsuranceChecklistState([...insuranceCheckedIds, itemId]);
-    } else {
-      insuranceCheckedIds = insuranceCheckedIds.filter((id) => id !== itemId);
-    }
-
-    saveInsuranceChecklistState();
+  elements.insurancePlanSelect.addEventListener("change", (event) => {
+    selectedInsurancePlan = event.target.value;
     renderInsuranceChecklist();
+  });
+
+  elements.insuranceSearchInput.addEventListener("input", (event) => {
+    insuranceSearchValue = event.target.value;
+    renderInsuranceChecklist();
+  });
+
+  elements.insuranceFilterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      insuranceDecisionFilter = button.dataset.insuranceFilter;
+      elements.insuranceFilterButtons.forEach((filterButton) => {
+        const isActive = filterButton === button;
+        filterButton.classList.toggle("active", isActive);
+        filterButton.setAttribute("aria-pressed", String(isActive));
+      });
+      renderInsuranceChecklist();
+    });
   });
 
   setActiveTab("leave");
@@ -1646,14 +1595,11 @@ if (typeof document !== "undefined") {
 if (typeof module !== "undefined") {
   module.exports = {
     INSURANCE_CHECKLIST_SECTIONS,
-    INSURANCE_CHECKLIST_STORAGE_KEY,
     addDays,
     addBusinessDays,
-    calculateInsuranceProgress,
     calculateParentalLeaveBenefits,
     calculateSchedule,
     createInitialState,
     differenceInInclusiveDays,
-    normalizeInsuranceChecklistState,
   };
 }
