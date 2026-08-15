@@ -18,7 +18,7 @@ test("uses the requested maternity and second pregnancy leave defaults", () => {
 
   assert.equal(state.maternityPrenatalDays, 20);
   assert.equal(state.maternityPostnatalDays, 70);
-  assert.equal(state.segments[1].startDate, "2026-09-05");
+  assert.equal(state.segments[1].startDate, "2026-10-01");
   assert.equal(state.segments[1].days, 80);
 });
 

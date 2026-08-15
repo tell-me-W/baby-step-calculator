@@ -906,7 +906,7 @@ function createInitialState() {
     nextFatherSegmentId: 102,
     segments: [
       { id: 1, type: "PREG_LEAVE", startDate: "2026-05-01", days: 61 },
-      { id: 2, type: "PREG_LEAVE", startDate: "2026-09-05", days: 80 },
+      { id: 2, type: "PREG_LEAVE", startDate: "2026-10-01", days: 80 },
     ],
     fatherSegments: [
       { id: 101, type: "FATHER_PARENTAL", startDate: "2027-03-01", days: 122 },
