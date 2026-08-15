@@ -1,6 +1,8 @@
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_MATERNITY_PRENATAL_DAYS = 45;
 const DEFAULT_MATERNITY_POSTNATAL_DAYS = 45;
+const INITIAL_MATERNITY_PRENATAL_DAYS = 20;
+const INITIAL_MATERNITY_POSTNATAL_DAYS = 70;
 const TOTAL_MATERNITY_LEAVE_DAYS = 90;
 const MIN_MATERNITY_POSTNATAL_DAYS = 45;
 const MAX_MATERNITY_PRENATAL_DAYS =
@@ -891,8 +893,8 @@ function formatKoreanDate(dateString) {
 function createInitialState() {
   return {
     dueDate: "2026-12-14",
-    maternityPrenatalDays: DEFAULT_MATERNITY_PRENATAL_DAYS,
-    maternityPostnatalDays: DEFAULT_MATERNITY_POSTNATAL_DAYS,
+    maternityPrenatalDays: INITIAL_MATERNITY_PRENATAL_DAYS,
+    maternityPostnatalDays: INITIAL_MATERNITY_POSTNATAL_DAYS,
     totalParentalLeaveDays: 548,
     motherMonthlyWage: 5000000,
     fatherMonthlyWage: 5000000,
@@ -900,7 +902,7 @@ function createInitialState() {
     nextFatherSegmentId: 102,
     segments: [
       { id: 1, type: "PREG_LEAVE", startDate: "2026-05-01", days: 61 },
-      { id: 2, type: "PREG_LEAVE", startDate: "2026-10-01", days: 31 },
+      { id: 2, type: "PREG_LEAVE", startDate: "2026-09-05", days: 80 },
     ],
     fatherSegments: [
       { id: 101, type: "FATHER_PARENTAL", startDate: "2027-03-01", days: 122 },
@@ -1608,6 +1610,7 @@ if (typeof module !== "undefined") {
     calculateInsuranceProgress,
     calculateParentalLeaveBenefits,
     calculateSchedule,
+    createInitialState,
     differenceInInclusiveDays,
     normalizeInsuranceChecklistState,
   };

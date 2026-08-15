@@ -10,7 +10,17 @@ const {
   calculateInsuranceProgress,
   calculateParentalLeaveBenefits,
   normalizeInsuranceChecklistState,
+  createInitialState,
 } = require("../app.js");
+
+test("uses the requested maternity and second pregnancy leave defaults", () => {
+  const state = createInitialState();
+
+  assert.equal(state.maternityPrenatalDays, 20);
+  assert.equal(state.maternityPostnatalDays, 70);
+  assert.equal(state.segments[1].startDate, "2026-09-05");
+  assert.equal(state.segments[1].days, 80);
+});
 
 test("anchors maternity leave 45 days before due date for a 90 day leave", () => {
   const schedule = calculateSchedule({
