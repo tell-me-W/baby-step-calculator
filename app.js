@@ -923,6 +923,9 @@ function initApp() {
     dueDate: document.querySelector("#dueDate"),
     maternityPrenatalDays: document.querySelector("#maternityPrenatalDays"),
     maternityPostnatalDays: document.querySelector("#maternityPostnatalDays"),
+    maternityLeaveSlider: document.querySelector("#maternityLeaveSlider"),
+    maternityStartDate: document.querySelector("#maternityStartDate"),
+    maternityEndDate: document.querySelector("#maternityEndDate"),
     quotaInputs: document.querySelectorAll("input[name='quota']"),
     segmentList: document.querySelector("#segmentList"),
     fatherSegmentList: document.querySelector("#fatherSegmentList"),
@@ -1375,6 +1378,9 @@ function initApp() {
 
   function renderOutputs() {
     const schedule = calculateSchedule(state);
+    const maternity = schedule.motherItems.find((item) => item.type === "MATERNITY");
+    elements.maternityStartDate.textContent = maternity?.startDate || "-";
+    elements.maternityEndDate.textContent = maternity?.endDate || "-";
     renderTimeline(schedule);
     renderTable(schedule);
     renderEligibility(schedule);
@@ -1387,6 +1393,11 @@ function initApp() {
     elements.dueDate.value = state.dueDate;
     elements.maternityPrenatalDays.value = state.maternityPrenatalDays;
     elements.maternityPostnatalDays.value = state.maternityPostnatalDays;
+    elements.maternityLeaveSlider.value = state.maternityPrenatalDays;
+    elements.maternityLeaveSlider.style.setProperty(
+      "--prenatal-percent",
+      `${(state.maternityPrenatalDays / MAX_MATERNITY_PRENATAL_DAYS) * 100}%`
+    );
     elements.motherMonthlyWage.value = state.motherMonthlyWage;
     elements.fatherMonthlyWage.value = state.fatherMonthlyWage;
     elements.quotaInputs.forEach((input) => {
@@ -1410,6 +1421,11 @@ function initApp() {
     );
     state.maternityPostnatalDays = TOTAL_MATERNITY_LEAVE_DAYS - state.maternityPrenatalDays;
     elements.maternityPostnatalDays.value = state.maternityPostnatalDays;
+    elements.maternityLeaveSlider.value = state.maternityPrenatalDays;
+    elements.maternityLeaveSlider.style.setProperty(
+      "--prenatal-percent",
+      `${(state.maternityPrenatalDays / MAX_MATERNITY_PRENATAL_DAYS) * 100}%`
+    );
     renderOutputs();
   });
 
@@ -1420,6 +1436,23 @@ function initApp() {
     );
     state.maternityPrenatalDays = TOTAL_MATERNITY_LEAVE_DAYS - state.maternityPostnatalDays;
     elements.maternityPrenatalDays.value = state.maternityPrenatalDays;
+    elements.maternityLeaveSlider.value = state.maternityPrenatalDays;
+    elements.maternityLeaveSlider.style.setProperty(
+      "--prenatal-percent",
+      `${(state.maternityPrenatalDays / MAX_MATERNITY_PRENATAL_DAYS) * 100}%`
+    );
+    renderOutputs();
+  });
+
+  elements.maternityLeaveSlider.addEventListener("input", (event) => {
+    state.maternityPrenatalDays = Number(event.target.value);
+    state.maternityPostnatalDays = TOTAL_MATERNITY_LEAVE_DAYS - state.maternityPrenatalDays;
+    elements.maternityPrenatalDays.value = state.maternityPrenatalDays;
+    elements.maternityPostnatalDays.value = state.maternityPostnatalDays;
+    event.target.style.setProperty(
+      "--prenatal-percent",
+      `${(state.maternityPrenatalDays / MAX_MATERNITY_PRENATAL_DAYS) * 100}%`
+    );
     renderOutputs();
   });
 

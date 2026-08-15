@@ -74,8 +74,8 @@
             <input id="dueDate" type="date">
           </label>
 
-          <fieldset class="maternity-settings">
-            <legend>출산전후휴가 설정</legend>
+          <div class="maternity-settings" role="group" aria-labelledby="maternitySettingsTitle">
+            <p id="maternitySettingsTitle" class="maternity-title">출산전후휴가 설정</p>
             <div class="maternity-day-fields">
               <label>
                 <span>출산 전</span>
@@ -88,11 +88,38 @@
                 <small>일</small>
               </label>
             </div>
+            <label class="maternity-slider-field">
+              <input
+                id="maternityLeaveSlider"
+                type="range"
+                min="0"
+                max="45"
+                step="1"
+                value="20"
+                aria-label="출산 전 휴가 일수 조정"
+                aria-describedby="maternityPostnatalHelp"
+              >
+              <span class="maternity-slider-labels" aria-hidden="true">
+                <small>출산 전 0일</small>
+                <small>출산 전 45일</small>
+              </span>
+            </label>
+            <div class="maternity-date-range" aria-live="polite">
+              <div>
+                <span>시작일</span>
+                <strong id="maternityStartDate">-</strong>
+              </div>
+              <span class="maternity-date-arrow" aria-hidden="true">→</span>
+              <div>
+                <span>종료일</span>
+                <strong id="maternityEndDate">-</strong>
+              </div>
+            </div>
             <p id="maternityPostnatalHelp">총 90일 안에서 연동되며, 출산 후 휴가는 최소 45일 이상 확보됩니다.</p>
-          </fieldset>
+          </div>
 
-          <fieldset class="quota-toggle">
-            <legend>육아휴직 한도</legend>
+          <div class="quota-toggle" role="group" aria-labelledby="quotaTitle">
+            <p id="quotaTitle" class="quota-title">육아휴직 한도</p>
             <label>
               <input type="radio" name="quota" value="365">
               <span>12개월 · 365일</span>
@@ -101,7 +128,7 @@
               <input type="radio" name="quota" value="548">
               <span>18개월 · 548일</span>
             </label>
-          </fieldset>
+          </div>
         </div>
 
         <div class="family-input-grid">

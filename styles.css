@@ -218,6 +218,10 @@ main,
 .field,
 .maternity-settings,
 .quota-toggle {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-inline-size: 0;
   border: 1px solid var(--line);
   border-radius: 8px;
   margin: 0;
@@ -225,9 +229,9 @@ main,
 }
 
 .field span,
-.maternity-settings legend,
+.maternity-settings .maternity-title,
 .maternity-settings label span,
-.quota-toggle legend,
+.quota-toggle .quota-title,
 .segment-row label span {
   color: var(--muted);
   font-size: 13px;
@@ -244,8 +248,8 @@ main,
   gap: 10px;
 }
 
-.maternity-settings legend {
-  padding: 0 4px;
+.maternity-settings .maternity-title {
+  margin: 0;
 }
 
 .maternity-day-fields {
@@ -269,6 +273,116 @@ main,
   background: #fffdfb;
   color: var(--text);
   padding: 9px 10px;
+}
+
+.maternity-slider-field {
+  display: grid;
+  gap: 4px;
+}
+
+.maternity-slider-field input[type="range"] {
+  --prenatal-percent: 44.44%;
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  cursor: ew-resize;
+}
+
+.maternity-slider-field input[type="range"]:focus {
+  outline: none;
+}
+
+.maternity-slider-field input[type="range"]:focus-visible {
+  border-radius: 999px;
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.maternity-slider-field input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--maternity) 0 var(--prenatal-percent),
+    #f9c7df var(--prenatal-percent) 100%
+  );
+}
+
+.maternity-slider-field input[type="range"]::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+  margin-top: -6px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  appearance: none;
+  background: var(--accent-strong);
+  box-shadow: 0 1px 5px rgba(50, 45, 40, 0.3);
+}
+
+.maternity-slider-field input[type="range"]::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #f9c7df;
+}
+
+.maternity-slider-field input[type="range"]::-moz-range-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--maternity);
+}
+
+.maternity-slider-field input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--accent-strong);
+  box-shadow: 0 1px 5px rgba(50, 45, 40, 0.3);
+}
+
+.maternity-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+}
+
+.maternity-slider-labels small {
+  font-size: 10px;
+}
+
+.maternity-date-range {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  background: #fff8fb;
+  padding: 9px 10px;
+}
+
+.maternity-date-range div {
+  display: grid;
+  gap: 2px;
+}
+
+.maternity-date-range div:last-child {
+  text-align: right;
+}
+
+.maternity-date-range span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.maternity-date-range strong {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.maternity-date-range .maternity-date-arrow {
+  font-size: 14px;
 }
 
 .maternity-settings p {
@@ -297,16 +411,20 @@ textarea {
 .quota-toggle {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  align-content: start;
+  align-self: start;
+  gap: 8px;
+  padding: 10px;
 }
 
-.quota-toggle legend {
+.quota-toggle .quota-title {
   width: 100%;
-  margin-bottom: 4px;
+  margin: 0 0 4px;
 }
 
 .quota-toggle label {
-  flex: 1 1 170px;
+  flex: 1 1 100%;
+  min-width: 0;
 }
 
 .quota-toggle input {
@@ -318,7 +436,7 @@ textarea {
   display: block;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 12px;
+  padding: 10px;
   text-align: center;
 }
 
@@ -808,7 +926,7 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fffdfb;
-  padding: 12px;
+  padding: 10px;
 }
 
 .checklist-item input {
@@ -961,7 +1079,7 @@ textarea {
   }
 
   .control-grid {
-    grid-template-columns: minmax(190px, 0.8fr) minmax(330px, 1.4fr) minmax(280px, 1.2fr);
+    grid-template-columns: minmax(180px, 0.8fr) minmax(360px, 1.55fr) minmax(220px, 0.85fr);
   }
 
   .button-row {
