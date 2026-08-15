@@ -6,10 +6,8 @@ const {
   addDays,
   differenceInInclusiveDays,
   addBusinessDays,
-  INSURANCE_CHECKLIST_STORAGE_KEY,
-  calculateInsuranceProgress,
+  INSURANCE_CHECKLIST_SECTIONS,
   calculateParentalLeaveBenefits,
-  normalizeInsuranceChecklistState,
   createInitialState,
 } = require("../app.js");
 
@@ -462,71 +460,20 @@ test("date helpers count leap days and month boundaries inclusively", () => {
   assert.equal(differenceInInclusiveDays("2024-02-28", "2024-03-01"), 3);
 });
 
-test("normalizes insurance checklist state to known unique item ids", () => {
-  const sections = [
-    {
-      id: "basics",
-      items: [
-        { id: "understand-structure", required: true },
-        { id: "confirm-after-birth", required: true },
-      ],
-    },
-    {
-      id: "questions",
-      items: [{ id: "ask-nicu-conditions", kind: "question" }],
-    },
-  ];
+test("loads the spreadsheet-based insurance coverage review data", () => {
+  const items = INSURANCE_CHECKLIST_SECTIONS.flatMap((section) => section.items);
+  const decisions = items.reduce((counts, item) => {
+    counts[item.decision] = (counts[item.decision] || 0) + 1;
+    return counts;
+  }, {});
 
-  assert.equal(INSURANCE_CHECKLIST_STORAGE_KEY, "babyStep.insuranceChecklist.v1");
-  assert.deepEqual(
-    normalizeInsuranceChecklistState(
-      ["confirm-after-birth", "unknown", "ask-nicu-conditions", "confirm-after-birth"],
-      sections
-    ),
-    ["confirm-after-birth", "ask-nicu-conditions"]
-  );
-});
-
-test("calculates insurance checklist progress and question readiness", () => {
-  const sections = [
-    {
-      id: "required",
-      items: [
-        { id: "check-timing", required: true },
-        { id: "prepare-disclosures", required: true },
-        { id: "review-rider", required: false },
-      ],
-    },
-    {
-      id: "questions",
-      items: [
-        { id: "ask-maturity", kind: "question" },
-        { id: "ask-waiting-period", kind: "question" },
-      ],
-    },
-  ];
-
-  assert.deepEqual(calculateInsuranceProgress(sections, ["check-timing", "ask-maturity"]), {
-    totalCount: 5,
-    checkedCount: 2,
-    percent: 40,
-    requiredCount: 2,
-    requiredCheckedCount: 1,
-    requiredRemaining: 1,
-    questionCount: 2,
-    questionCheckedCount: 1,
-    questionsReady: false,
+  assert.equal(INSURANCE_CHECKLIST_SECTIONS.length, 11);
+  assert.equal(items.length, 133);
+  assert.deepEqual(decisions, {
+    유지: 49,
+    제거: 82,
+    필수가입: 2,
   });
-
-  assert.equal(
-    calculateInsuranceProgress(sections, [
-      "check-timing",
-      "prepare-disclosures",
-      "ask-maturity",
-      "ask-waiting-period",
-    ]).questionsReady,
-    true
-  );
 });
 
 test("groups monthly parental leave benefits by expected payment month with retroactive six plus six adjustments", () => {
