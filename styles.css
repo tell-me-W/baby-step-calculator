@@ -906,6 +906,26 @@ textarea {
   line-height: 1.5;
 }
 
+.eligibility-card .eligibility-deadline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.eligibility-card .eligibility-deadline strong {
+  font-size: 18px;
+}
+
+.eligibility-card .eligibility-deadline small {
+  width: 100%;
+  opacity: 0.78;
+  font-size: 11px;
+}
+
 @media (min-width: 900px) {
   main,
   .app-header,

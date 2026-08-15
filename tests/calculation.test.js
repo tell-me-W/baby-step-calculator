@@ -262,6 +262,7 @@ test("father 90th parental leave day must happen before mother's 365th parental 
   });
 
   assert.equal(onTime.eligibility.mother365thParentalLeaveDate, "2028-01-29");
+  assert.equal(onTime.eligibility.latestFatherParentalLeaveStartDate, "2027-11-01");
   assert.equal(onTime.eligibility.father90thParentalLeaveDate, "2027-04-29");
   assert.equal(onTime.eligibility.father90thBeforeMother365th, true);
   assert.equal(late.eligibility.father90thBeforeMother365th, false);

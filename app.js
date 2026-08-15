@@ -840,6 +840,9 @@ function calculateEligibility(motherItems, fatherItems) {
     ["PREG_LEAVE", "POSTNATAL"],
     365
   );
+  const latestFatherParentalLeaveStartDate = mother365thParentalLeaveDate
+    ? addDays(mother365thParentalLeaveDate, -89)
+    : null;
   const father90thBeforeMother365th =
     Boolean(father90thParentalLeaveDate && mother365thParentalLeaveDate) &&
     parseDate(father90thParentalLeaveDate) <= parseDate(mother365thParentalLeaveDate);
@@ -849,6 +852,7 @@ function calculateEligibility(motherItems, fatherItems) {
     fatherParentalDaysRemaining: Math.max(90 - fatherParentalDays, 0),
     father90thParentalLeaveDate,
     mother365thParentalLeaveDate,
+    latestFatherParentalLeaveStartDate,
     father90thBeforeMother365th,
     isEligibleFor18Months: fatherParentalDays >= 90 && father90thBeforeMother365th,
   };
@@ -1258,6 +1262,11 @@ function initApp() {
     elements.eligibilityCard.innerHTML = `
       <strong>${message}</strong>
       <span>엄마 육아휴직 누적 365일째: ${eligibility.mother365thParentalLeaveDate || "-"}</span>
+      <p class="eligibility-deadline">
+        아빠 육아휴직은 늦어도
+        <strong>${eligibility.latestFatherParentalLeaveStartDate || "-"}</strong>까지 시작
+        <small>90일 연속 사용 기준</small>
+      </p>
       <p>${timing}</p>
     `;
   }
