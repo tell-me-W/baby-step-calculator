@@ -976,12 +976,12 @@ function initApp() {
       heading.className = "insurance-section-heading";
 
       const headingCopy = document.createElement("div");
-      const eyebrow = document.createElement("p");
+      const sectionIndex = document.createElement("span");
       const title = document.createElement("h3");
-      eyebrow.className = "eyebrow";
-      eyebrow.textContent = section.eyebrow;
+      sectionIndex.className = "section-index";
+      sectionIndex.textContent = section.sectionCode.replace("Coverage ", "");
       title.textContent = section.title;
-      headingCopy.append(eyebrow, title);
+      headingCopy.append(sectionIndex, title);
 
       const count = document.createElement("span");
       count.className = "insurance-section-count";
