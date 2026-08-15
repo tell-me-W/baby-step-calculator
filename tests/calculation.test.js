@@ -26,6 +26,42 @@ test("anchors maternity leave 45 days before due date for a 90 day leave", () =>
   assert.equal(maternity.days, 90);
 });
 
+test("uses configurable prenatal and postnatal maternity leave days", () => {
+  const schedule = calculateSchedule({
+    dueDate: "2026-12-16",
+    maternityPrenatalDays: 30,
+    maternityPostnatalDays: 60,
+    totalParentalLeaveDays: 365,
+    segments: [],
+  });
+
+  const maternity = schedule.items.find((item) => item.type === "MATERNITY");
+
+  assert.equal(maternity.startDate, "2026-11-16");
+  assert.equal(maternity.endDate, "2027-02-13");
+  assert.equal(maternity.days, 90);
+  assert.equal(schedule.maternityPrenatalDays, 30);
+  assert.equal(schedule.maternityPostnatalDays, 60);
+});
+
+test("guarantees at least 45 postnatal maternity leave days", () => {
+  const schedule = calculateSchedule({
+    dueDate: "2026-12-16",
+    maternityPrenatalDays: 50,
+    maternityPostnatalDays: 20,
+    totalParentalLeaveDays: 365,
+    segments: [],
+  });
+
+  const maternity = schedule.items.find((item) => item.type === "MATERNITY");
+
+  assert.equal(maternity.startDate, "2026-10-27");
+  assert.equal(maternity.endDate, "2027-01-29");
+  assert.equal(maternity.days, 95);
+  assert.equal(schedule.maternityPostnatalDays, 45);
+  assert.equal(schedule.warnings.includes("출산 후 휴가는 법정 최소 45일로 조정했습니다."), true);
+});
+
 test("uses explicit leave start dates and generates work gaps before maternity leave", () => {
   const schedule = calculateSchedule({
     dueDate: "2026-12-16",

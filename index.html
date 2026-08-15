@@ -74,6 +74,23 @@
             <input id="dueDate" type="date">
           </label>
 
+          <fieldset class="maternity-settings">
+            <legend>출산전후휴가 설정</legend>
+            <div class="maternity-day-fields">
+              <label>
+                <span>출산 전</span>
+                <input id="maternityPrenatalDays" type="number" min="0" step="1" inputmode="numeric">
+                <small>일</small>
+              </label>
+              <label>
+                <span>출산 후</span>
+                <input id="maternityPostnatalDays" type="number" min="45" step="1" inputmode="numeric" aria-describedby="maternityPostnatalHelp">
+                <small>일</small>
+              </label>
+            </div>
+            <p id="maternityPostnatalHelp">출산 후 휴가는 법정 최소 45일 이상으로 설정됩니다.</p>
+          </fieldset>
+
           <fieldset class="quota-toggle">
             <legend>육아휴직 한도</legend>
             <label>

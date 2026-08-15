@@ -1,4 +1,7 @@
 const DAY_MS = 24 * 60 * 60 * 1000;
+const DEFAULT_MATERNITY_PRENATAL_DAYS = 45;
+const DEFAULT_MATERNITY_POSTNATAL_DAYS = 45;
+const MIN_MATERNITY_POSTNATAL_DAYS = 45;
 
 const SEGMENT_LABELS = {
   PREG_LEAVE: "임신중 육아휴직",
@@ -658,10 +661,28 @@ function calculateMotherItems(state, warnings) {
     .map(normalizeSegment)
     .filter((segment) => segment.type === "PREG_LEAVE" && segment.startDate && segment.days > 0)
     .sort((a, b) => parseDate(a.startDate) - parseDate(b.startDate));
-  const maternityStart = addDays(state.dueDate, -45);
-  const maternityEnd = addDays(maternityStart, 89);
+  const requestedPrenatalDays = Number(
+    state.maternityPrenatalDays ?? DEFAULT_MATERNITY_PRENATAL_DAYS
+  );
+  const requestedPostnatalDays = Number(
+    state.maternityPostnatalDays ?? DEFAULT_MATERNITY_POSTNATAL_DAYS
+  );
+  const maternityPrenatalDays = Number.isFinite(requestedPrenatalDays)
+    ? Math.max(0, Math.floor(requestedPrenatalDays))
+    : DEFAULT_MATERNITY_PRENATAL_DAYS;
+  const maternityPostnatalDays = Number.isFinite(requestedPostnatalDays)
+    ? Math.max(MIN_MATERNITY_POSTNATAL_DAYS, Math.floor(requestedPostnatalDays))
+    : DEFAULT_MATERNITY_POSTNATAL_DAYS;
+  const maternityStart = addDays(state.dueDate, -maternityPrenatalDays);
+  const maternityEnd = addDays(state.dueDate, maternityPostnatalDays - 1);
   const items = [];
   let cursor = null;
+
+  if (requestedPostnatalDays < MIN_MATERNITY_POSTNATAL_DAYS) {
+    warnings.push(
+      `출산 후 휴가는 법정 최소 ${MIN_MATERNITY_POSTNATAL_DAYS}일로 조정했습니다.`
+    );
+  }
 
   segments.forEach((segment) => {
     if (parseDate(segment.startDate) >= parseDate(maternityStart)) {
@@ -725,7 +746,7 @@ function calculateMotherItems(state, warnings) {
   items.push(createScheduleItem({
     id: "maternity",
     type: "MATERNITY",
-    days: 90,
+    days: maternityPrenatalDays + maternityPostnatalDays,
   }, maternityStart));
 
   if (remainingParentalLeaveDays > 0) {
@@ -766,6 +787,8 @@ function calculateMotherItems(state, warnings) {
 
   return {
     items,
+    maternityPrenatalDays,
+    maternityPostnatalDays,
     usedParentalLeaveDays,
     remainingParentalLeaveDays,
   };
@@ -826,7 +849,9 @@ function calculateSchedule(state) {
   const fatherItems = calculateFatherItems(state, warnings);
   const eligibility = calculateEligibility(motherItems, fatherItems);
   const lastMotherItem = motherItems[motherItems.length - 1];
-  const returnToWorkDate = lastMotherItem ? addDays(lastMotherItem.endDate, 1) : addDays(state.dueDate, -45);
+  const returnToWorkDate = lastMotherItem
+    ? addDays(lastMotherItem.endDate, 1)
+    : addDays(state.dueDate, -mother.maternityPrenatalDays);
   const allBoundaries = [...motherItems, ...fatherItems]
     .map((item) => ({ label: item.label, date: item.startDate }))
     .sort((a, b) => parseDate(a.date) - parseDate(b.date));
@@ -841,6 +866,8 @@ function calculateSchedule(state) {
     eligibility,
     usedParentalLeaveDays: mother.usedParentalLeaveDays,
     remainingParentalLeaveDays: mother.remainingParentalLeaveDays,
+    maternityPrenatalDays: mother.maternityPrenatalDays,
+    maternityPostnatalDays: mother.maternityPostnatalDays,
     returnToWorkDate,
     warnings,
   };
@@ -854,6 +881,8 @@ function formatKoreanDate(dateString) {
 function createInitialState() {
   return {
     dueDate: "2026-12-14",
+    maternityPrenatalDays: DEFAULT_MATERNITY_PRENATAL_DAYS,
+    maternityPostnatalDays: DEFAULT_MATERNITY_POSTNATAL_DAYS,
     totalParentalLeaveDays: 548,
     motherMonthlyWage: 5000000,
     fatherMonthlyWage: 5000000,
@@ -876,6 +905,8 @@ function initApp() {
     tabPanels: document.querySelectorAll("[data-tab-panel]"),
     leaveSummary: document.querySelector("[data-leave-summary]"),
     dueDate: document.querySelector("#dueDate"),
+    maternityPrenatalDays: document.querySelector("#maternityPrenatalDays"),
+    maternityPostnatalDays: document.querySelector("#maternityPostnatalDays"),
     quotaInputs: document.querySelectorAll("input[name='quota']"),
     segmentList: document.querySelector("#segmentList"),
     fatherSegmentList: document.querySelector("#fatherSegmentList"),
@@ -1333,6 +1364,8 @@ function initApp() {
 
   function render() {
     elements.dueDate.value = state.dueDate;
+    elements.maternityPrenatalDays.value = state.maternityPrenatalDays;
+    elements.maternityPostnatalDays.value = state.maternityPostnatalDays;
     elements.motherMonthlyWage.value = state.motherMonthlyWage;
     elements.fatherMonthlyWage.value = state.fatherMonthlyWage;
     elements.quotaInputs.forEach((input) => {
@@ -1348,6 +1381,28 @@ function initApp() {
     state.dueDate = event.target.value;
     render();
   });
+
+  elements.maternityPrenatalDays.addEventListener("input", (event) => {
+    state.maternityPrenatalDays = Math.max(0, Math.floor(Number(event.target.value) || 0));
+    renderOutputs();
+  });
+
+  elements.maternityPostnatalDays.addEventListener("input", (event) => {
+    state.maternityPostnatalDays = Number(event.target.value);
+    renderOutputs();
+  });
+
+  function commitMaternityPostnatalDays() {
+    state.maternityPostnatalDays = Math.max(
+      MIN_MATERNITY_POSTNATAL_DAYS,
+      Math.floor(Number(state.maternityPostnatalDays) || MIN_MATERNITY_POSTNATAL_DAYS)
+    );
+    elements.maternityPostnatalDays.value = state.maternityPostnatalDays;
+    renderOutputs();
+  }
+
+  elements.maternityPostnatalDays.addEventListener("change", commitMaternityPostnatalDays);
+  elements.maternityPostnatalDays.addEventListener("blur", commitMaternityPostnatalDays);
 
   elements.motherMonthlyWage.addEventListener("input", (event) => {
     state.motherMonthlyWage = Math.max(0, Number(event.target.value) || 0);
