@@ -1,7 +1,10 @@
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_MATERNITY_PRENATAL_DAYS = 45;
 const DEFAULT_MATERNITY_POSTNATAL_DAYS = 45;
+const TOTAL_MATERNITY_LEAVE_DAYS = 90;
 const MIN_MATERNITY_POSTNATAL_DAYS = 45;
+const MAX_MATERNITY_PRENATAL_DAYS =
+  TOTAL_MATERNITY_LEAVE_DAYS - MIN_MATERNITY_POSTNATAL_DAYS;
 
 const SEGMENT_LABELS = {
   PREG_LEAVE: "임신중 육아휴직",
@@ -661,18 +664,21 @@ function calculateMotherItems(state, warnings) {
     .map(normalizeSegment)
     .filter((segment) => segment.type === "PREG_LEAVE" && segment.startDate && segment.days > 0)
     .sort((a, b) => parseDate(a.startDate) - parseDate(b.startDate));
+  const hasPostnatalSetting = state.maternityPostnatalDays !== undefined
+    && state.maternityPostnatalDays !== null;
   const requestedPrenatalDays = Number(
     state.maternityPrenatalDays ?? DEFAULT_MATERNITY_PRENATAL_DAYS
   );
-  const requestedPostnatalDays = Number(
-    state.maternityPostnatalDays ?? DEFAULT_MATERNITY_POSTNATAL_DAYS
-  );
-  const maternityPrenatalDays = Number.isFinite(requestedPrenatalDays)
-    ? Math.max(0, Math.floor(requestedPrenatalDays))
-    : DEFAULT_MATERNITY_PRENATAL_DAYS;
+  const requestedPostnatalDays = hasPostnatalSetting
+    ? Number(state.maternityPostnatalDays)
+    : TOTAL_MATERNITY_LEAVE_DAYS - requestedPrenatalDays;
   const maternityPostnatalDays = Number.isFinite(requestedPostnatalDays)
-    ? Math.max(MIN_MATERNITY_POSTNATAL_DAYS, Math.floor(requestedPostnatalDays))
+    ? Math.min(
+      TOTAL_MATERNITY_LEAVE_DAYS,
+      Math.max(MIN_MATERNITY_POSTNATAL_DAYS, Math.floor(requestedPostnatalDays))
+    )
     : DEFAULT_MATERNITY_POSTNATAL_DAYS;
+  const maternityPrenatalDays = TOTAL_MATERNITY_LEAVE_DAYS - maternityPostnatalDays;
   const maternityStart = addDays(state.dueDate, -maternityPrenatalDays);
   const maternityEnd = addDays(state.dueDate, maternityPostnatalDays - 1);
   const items = [];
@@ -682,6 +688,10 @@ function calculateMotherItems(state, warnings) {
     warnings.push(
       `출산 후 휴가는 법정 최소 ${MIN_MATERNITY_POSTNATAL_DAYS}일로 조정했습니다.`
     );
+  }
+
+  if (requestedPostnatalDays > TOTAL_MATERNITY_LEAVE_DAYS) {
+    warnings.push(`출산전후휴가는 총 ${TOTAL_MATERNITY_LEAVE_DAYS}일로 조정했습니다.`);
   }
 
   segments.forEach((segment) => {
@@ -746,7 +756,7 @@ function calculateMotherItems(state, warnings) {
   items.push(createScheduleItem({
     id: "maternity",
     type: "MATERNITY",
-    days: maternityPrenatalDays + maternityPostnatalDays,
+    days: TOTAL_MATERNITY_LEAVE_DAYS,
   }, maternityStart));
 
   if (remainingParentalLeaveDays > 0) {
@@ -1383,26 +1393,29 @@ function initApp() {
   });
 
   elements.maternityPrenatalDays.addEventListener("input", (event) => {
-    state.maternityPrenatalDays = Math.max(0, Math.floor(Number(event.target.value) || 0));
+    state.maternityPrenatalDays = Math.min(
+      MAX_MATERNITY_PRENATAL_DAYS,
+      Math.max(0, Math.floor(Number(event.target.value) || 0))
+    );
+    state.maternityPostnatalDays = TOTAL_MATERNITY_LEAVE_DAYS - state.maternityPrenatalDays;
+    elements.maternityPostnatalDays.value = state.maternityPostnatalDays;
     renderOutputs();
   });
 
   elements.maternityPostnatalDays.addEventListener("input", (event) => {
-    state.maternityPostnatalDays = Number(event.target.value);
+    state.maternityPostnatalDays = Math.min(
+      TOTAL_MATERNITY_LEAVE_DAYS,
+      Math.max(MIN_MATERNITY_POSTNATAL_DAYS, Math.floor(Number(event.target.value) || 0))
+    );
+    state.maternityPrenatalDays = TOTAL_MATERNITY_LEAVE_DAYS - state.maternityPostnatalDays;
+    elements.maternityPrenatalDays.value = state.maternityPrenatalDays;
     renderOutputs();
   });
 
-  function commitMaternityPostnatalDays() {
-    state.maternityPostnatalDays = Math.max(
-      MIN_MATERNITY_POSTNATAL_DAYS,
-      Math.floor(Number(state.maternityPostnatalDays) || MIN_MATERNITY_POSTNATAL_DAYS)
-    );
-    elements.maternityPostnatalDays.value = state.maternityPostnatalDays;
-    renderOutputs();
-  }
-
-  elements.maternityPostnatalDays.addEventListener("change", commitMaternityPostnatalDays);
-  elements.maternityPostnatalDays.addEventListener("blur", commitMaternityPostnatalDays);
+  elements.maternityPrenatalDays.addEventListener("change", render);
+  elements.maternityPrenatalDays.addEventListener("blur", render);
+  elements.maternityPostnatalDays.addEventListener("change", render);
+  elements.maternityPostnatalDays.addEventListener("blur", render);
 
   elements.motherMonthlyWage.addEventListener("input", (event) => {
     state.motherMonthlyWage = Math.max(0, Number(event.target.value) || 0);

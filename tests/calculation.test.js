@@ -55,11 +55,29 @@ test("guarantees at least 45 postnatal maternity leave days", () => {
 
   const maternity = schedule.items.find((item) => item.type === "MATERNITY");
 
-  assert.equal(maternity.startDate, "2026-10-27");
+  assert.equal(maternity.startDate, "2026-11-01");
   assert.equal(maternity.endDate, "2027-01-29");
-  assert.equal(maternity.days, 95);
+  assert.equal(maternity.days, 90);
+  assert.equal(schedule.maternityPrenatalDays, 45);
   assert.equal(schedule.maternityPostnatalDays, 45);
   assert.equal(schedule.warnings.includes("출산 후 휴가는 법정 최소 45일로 조정했습니다."), true);
+});
+
+test("derives postnatal days from a prenatal-only maternity leave setting", () => {
+  const schedule = calculateSchedule({
+    dueDate: "2026-12-16",
+    maternityPrenatalDays: 20,
+    totalParentalLeaveDays: 365,
+    segments: [],
+  });
+
+  const maternity = schedule.items.find((item) => item.type === "MATERNITY");
+
+  assert.equal(schedule.maternityPrenatalDays, 20);
+  assert.equal(schedule.maternityPostnatalDays, 70);
+  assert.equal(maternity.startDate, "2026-11-26");
+  assert.equal(maternity.endDate, "2027-02-23");
+  assert.equal(maternity.days, 90);
 });
 
 test("uses explicit leave start dates and generates work gaps before maternity leave", () => {
