@@ -28,7 +28,7 @@
     {
       "id": "section-1",
       "title": "출생 위험 보장",
-      "eyebrow": "Coverage 01",
+      "sectionCode": "Coverage 01",
       "items": [
         {
           "id": "zd7317000",
@@ -222,7 +222,7 @@
     {
       "id": "section-2",
       "title": "임산부 엄마도 보장",
-      "eyebrow": "Coverage 02",
+      "sectionCode": "Coverage 02",
       "items": [
         {
           "id": "zd4910000",
@@ -586,7 +586,7 @@
     {
       "id": "section-3",
       "title": "자녀에게 입원이 필요할 때",
-      "eyebrow": "Coverage 03",
+      "sectionCode": "Coverage 03",
       "items": [
         {
           "id": "zd2800000",
@@ -729,7 +729,7 @@
     {
       "id": "section-4",
       "title": "자녀에게 수술이 필요할 때",
-      "eyebrow": "Coverage 04",
+      "sectionCode": "Coverage 04",
       "items": [
         {
           "id": "zd7108000",
@@ -974,7 +974,7 @@
     {
       "id": "section-5",
       "title": "암으로부터 자녀 보장",
-      "eyebrow": "Coverage 05",
+      "sectionCode": "Coverage 05",
       "items": [
         {
           "id": "zda347000",
@@ -1219,7 +1219,7 @@
     {
       "id": "section-6",
       "title": "뇌/심장 질환으로부터 자녀 보장",
-      "eyebrow": "Coverage 06",
+      "sectionCode": "Coverage 06",
       "items": [
         {
           "id": "zd4565000",
@@ -1430,7 +1430,7 @@
     {
       "id": "section-7",
       "title": "타인에게 배상할 일이 발생할 때",
-      "eyebrow": "Coverage 07",
+      "sectionCode": "Coverage 07",
       "items": [
         {
           "id": "zr2342000",
@@ -1454,7 +1454,7 @@
     {
       "id": "section-8",
       "title": "상해사고로부터 자녀 보장",
-      "eyebrow": "Coverage 08",
+      "sectionCode": "Coverage 08",
       "items": [
         {
           "id": "zd2432000",
@@ -1750,7 +1750,7 @@
     {
       "id": "section-9",
       "title": "특정질환으로부터 자녀 보장",
-      "eyebrow": "Coverage 09",
+      "sectionCode": "Coverage 09",
       "items": [
         {
           "id": "zd7855000",
@@ -2216,7 +2216,7 @@
     {
       "id": "section-10",
       "title": "자녀 성장에 맞춰 예약 보장",
-      "eyebrow": "Coverage 10",
+      "sectionCode": "Coverage 10",
       "items": [
         {
           "id": "zd2467000",
@@ -2291,7 +2291,7 @@
     {
       "id": "section-11",
       "title": "자녀에게 장해가 발생할 때",
-      "eyebrow": "Coverage 11",
+      "sectionCode": "Coverage 11",
       "items": [
         {
           "id": "zd7308000",

@@ -1,13 +1,13 @@
 :root {
   color-scheme: light;
-  --bg: #f6f4f1;
-  --surface: #ffffff;
-  --text: #26272b;
-  --muted: #687076;
-  --line: #e6e0da;
+  --bg: #ffffff;
+  --surface: #f3f8f7;
+  --text: #172321;
+  --muted: #596966;
+  --line: #cddad7;
   --accent: #0f766e;
   --accent-strong: #115e59;
-  --soft-accent: #dcf5f1;
+  --soft-accent: #dcefeb;
   --work: #e0e0e0;
   --pregnancy: #ffb6c1;
   --maternity: #ff69b4;
@@ -16,7 +16,8 @@
   --father-parental: #a7f3d0;
   --warning: #fff1d6;
   --warning-text: #6f4600;
-  font-family: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Native UI type keeps dates, tables, and Korean labels easy to scan. */
+  font-family: "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
 }
 
 * {
@@ -30,9 +31,7 @@
 body {
   margin: 0;
   min-width: 320px;
-  background:
-    linear-gradient(180deg, rgba(15, 118, 110, 0.08), transparent 280px),
-    var(--bg);
+  background: var(--bg);
   color: var(--text);
 }
 
@@ -70,8 +69,11 @@ main,
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
+  width: 100%;
   gap: 20px;
-  padding: 24px 0 18px;
+  padding: 28px max(16px, calc((100% - 1120px) / 2)) 24px;
+  background: var(--accent-strong);
+  color: #ffffff;
 }
 
 .app-header h1,
@@ -82,20 +84,23 @@ main,
 }
 
 .app-header h1 {
-  font-size: clamp(28px, 4vw, 44px);
-  line-height: 1.08;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
 }
 
 .app-tabs {
   display: grid;
   grid-template-columns: 1fr;
   gap: 8px;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
+  padding-top: 14px;
 }
 
 .tab-button {
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
   color: var(--text);
 }
 
@@ -104,22 +109,13 @@ main,
 }
 
 .tab-button.active {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #ffffff;
+  border-bottom: 3px solid var(--accent);
+  background: transparent;
+  color: var(--accent-strong);
 }
 
 .tab-panel[hidden] {
   display: none;
-}
-
-.eyebrow {
-  margin: 0 0 6px;
-  color: var(--accent-strong);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0;
-  text-transform: uppercase;
 }
 
 .summary-pill,
@@ -137,6 +133,8 @@ main,
   flex-direction: column;
   align-items: flex-start;
   min-width: 0;
+  border-color: rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .summary-pill span,
@@ -145,17 +143,22 @@ main,
   font-size: 13px;
 }
 
+.summary-pill span {
+  color: rgba(255, 255, 255, 0.72);
+}
+
 .summary-pill strong {
   font-size: 20px;
 }
 
 .panel {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  box-shadow: 0 18px 45px rgba(50, 45, 40, 0.08);
-  margin-bottom: 18px;
-  padding: 16px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  margin-bottom: 0;
+  padding: 32px 0;
 }
 
 .section-heading {
@@ -167,7 +170,8 @@ main,
 }
 
 .section-heading h2 {
-  font-size: 22px;
+  font-size: 28px;
+  letter-spacing: -0.03em;
 }
 
 .section-copy {
@@ -180,7 +184,8 @@ main,
 
 .controls-panel {
   display: grid;
-  gap: 18px;
+  gap: 32px;
+  border-top: 0;
 }
 
 .family-input-grid {
@@ -192,8 +197,10 @@ main,
   display: grid;
   gap: 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 14px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 20px;
 }
 
 .person-panel summary {
@@ -579,13 +586,7 @@ textarea {
 .timeline-gap {
   display: none;
   min-width: 0;
-  background: repeating-linear-gradient(
-    45deg,
-    #f8fafc,
-    #f8fafc 8px,
-    #eef2f7 8px,
-    #eef2f7 16px
-  );
+  background: #e8eeec;
 }
 
 .timeline-segment span {
@@ -638,10 +639,11 @@ textarea {
 }
 
 .boundary-marker {
-  border-left: 3px solid var(--accent);
-  border-radius: 6px;
-  background: #f8fbfa;
-  padding: 8px 10px;
+  border-left: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  padding: 8px 0 10px;
 }
 
 .boundary-marker span {
@@ -867,10 +869,11 @@ textarea {
 .metric-card {
   display: grid;
   gap: 6px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fffdfb;
-  padding: 14px;
+  border: 0;
+  border-top: 2px solid var(--accent);
+  border-radius: 0;
+  background: transparent;
+  padding: 12px 0 0;
 }
 
 .metric-card span {
@@ -907,10 +910,11 @@ textarea {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: start;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fffdfb;
-  padding: 10px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  padding: 14px 0;
 }
 
 .checklist-copy {
@@ -1096,6 +1100,20 @@ textarea {
   margin: 0;
 }
 
+.insurance-section-heading > div {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+}
+
+.section-index {
+  color: var(--accent);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 900;
+}
+
 .insurance-section-count {
   flex: 0 0 auto;
   border-radius: 999px;
@@ -1256,16 +1274,16 @@ textarea {
 
 @media (min-width: 900px) {
   main,
-  .app-header,
   .app-tabs {
     width: min(1120px, calc(100% - 32px));
   }
 
   .app-header {
+    width: 100%;
     flex-direction: row;
     align-items: end;
     justify-content: space-between;
-    padding: 34px 0 22px;
+    padding: 34px max(16px, calc((100% - 1120px) / 2)) 28px;
   }
 
   .summary-pill {
