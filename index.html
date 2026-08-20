@@ -7,6 +7,7 @@
   <title>우리 집 출산 준비 도구</title>
   <link rel="stylesheet" href="styles.css">
   <script src="insurance-data.js" defer></script>
+  <script src="benefits-data.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 
@@ -21,7 +22,7 @@
     </div>
   </header>
 
-  <nav class="app-tabs" aria-label="도구 선택">
+  <nav class="app-tabs" role="tablist" aria-label="도구 선택">
     <button
       id="leavePlannerTab"
       class="tab-button active"
@@ -43,6 +44,17 @@
       data-tab-target="insurance"
     >
       태아보험 체크리스트
+    </button>
+    <button
+      id="birthBenefitsTab"
+      class="tab-button"
+      type="button"
+      role="tab"
+      aria-selected="false"
+      aria-controls="birthBenefitsPanel"
+      data-tab-target="benefits"
+    >
+      출산 혜택
     </button>
   </nav>
 
@@ -368,6 +380,101 @@
             <li><a href="https://direct.samsungfire.com/ria/pc/product/factory/?state=Front&amp;product=fetus" target="_blank" rel="noreferrer">삼성화재 다이렉트 태아보험</a></li>
           </ul>
         </div>
+      </section>
+    </section>
+
+    <section
+      id="birthBenefitsPanel"
+      class="tab-panel"
+      role="tabpanel"
+      aria-labelledby="birthBenefitsTab"
+      data-tab-panel="benefits"
+      hidden
+    >
+      <section class="panel benefits-overview" aria-labelledby="birthBenefitsTitle">
+        <div class="section-heading benefits-hero-heading">
+          <div>
+            <h2 id="birthBenefitsTitle">천안·충남 출산 혜택 체크리스트</h2>
+            <p class="section-copy">
+              첫째·단태아·천안시 출생등록 예정 가정을 기준으로, 신청 순서대로 확인하세요.
+            </p>
+          </div>
+          <div class="benefits-date-card">
+            <span>연동된 출산 예정일</span>
+            <strong id="benefitsDueDate">-</strong>
+            <small>육아휴직 플랜의 예정일을 사용합니다.</small>
+          </div>
+        </div>
+
+        <div class="benefits-progress-layout">
+          <div class="benefits-progress-card">
+            <div class="benefits-progress-copy">
+              <span>신청 준비 진행률</span>
+              <strong id="benefitsProgressText">0%</strong>
+            </div>
+            <div
+              id="benefitsProgressBar"
+              class="benefits-progress-track"
+              role="progressbar"
+              aria-label="출산 혜택 신청 준비 진행률"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+            >
+              <span></span>
+            </div>
+          </div>
+          <div class="benefits-counts" aria-live="polite">
+            <div><span>완료</span><strong id="benefitsCompletedCount">0개</strong></div>
+            <div><span>남음</span><strong id="benefitsRemainingCount">0개</strong></div>
+          </div>
+        </div>
+
+        <div class="benefits-money-grid">
+          <div class="metric-card">
+            <span>전국 공통 · 임신~24개월</span>
+            <strong id="benefitsNationalTotal">0원</strong>
+            <small>진료비·첫만남이용권·부모급여·아동수당</small>
+          </div>
+          <div class="metric-card">
+            <span>충남·천안 확정액</span>
+            <strong id="benefitsLocalTotal">0원</strong>
+            <small>출생축하금·일반 단태아 산후조리</small>
+          </div>
+          <div class="metric-card">
+            <span>조건 충족 시 추가</span>
+            <strong id="benefitsConditionalTotal">0원</strong>
+            <small>금액이 명시된 조건부 혜택만</small>
+          </div>
+        </div>
+        <div id="benefitsAlerts" class="benefits-alerts" aria-live="polite"></div>
+      </section>
+
+      <section class="panel benefits-list-panel" aria-labelledby="benefitsChecklistTitle">
+        <div class="section-heading">
+          <div>
+            <h2 id="benefitsChecklistTitle">신청 순서별 체크</h2>
+            <p id="benefitsVisibleCount" class="section-copy"></p>
+          </div>
+        </div>
+
+        <div class="benefits-filter-buttons" role="group" aria-label="출산 혜택 범위 필터">
+          <button class="filter-button active" type="button" data-benefit-filter="all" aria-pressed="true">전체</button>
+          <button class="filter-button" type="button" data-benefit-filter="national" aria-pressed="false">전국 공통</button>
+          <button class="filter-button" type="button" data-benefit-filter="local" aria-pressed="false">충남·천안</button>
+          <button class="filter-button" type="button" data-benefit-filter="conditional" aria-pressed="false">조건부</button>
+        </div>
+
+        <div id="birthBenefitsSections" class="benefits-sections"></div>
+        <p id="benefitsEmptyState" class="insurance-empty-state" hidden>조건에 맞는 혜택이 없습니다.</p>
+      </section>
+
+      <section class="panel benefits-notice" aria-labelledby="benefitsNoticeTitle">
+        <div class="section-heading">
+          <div><h2 id="benefitsNoticeTitle">확인 기준 및 주의</h2></div>
+        </div>
+        <p id="benefitsVerifiedAt" class="benefits-verified-at"></p>
+        <p id="benefitsNotice" class="legal-note"></p>
       </section>
     </section>
   </main>
