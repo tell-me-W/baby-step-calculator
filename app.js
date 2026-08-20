@@ -30,8 +30,16 @@ const INSURANCE_DATA_SOURCE =
   typeof module !== "undefined" && module.exports
     ? require("./insurance-data.js")
     : window.INSURANCE_DATA;
+const BIRTH_BENEFITS_DATA_SOURCE =
+  typeof module !== "undefined" && module.exports
+    ? require("./benefits-data.js")
+    : window.BIRTH_BENEFITS_DATA;
 const INSURANCE_PLAN_META = INSURANCE_DATA_SOURCE.meta;
 const INSURANCE_CHECKLIST_SECTIONS = INSURANCE_DATA_SOURCE.sections;
+const BIRTH_BENEFITS = BIRTH_BENEFITS_DATA_SOURCE.items;
+const BIRTH_BENEFIT_CATEGORIES = BIRTH_BENEFITS_DATA_SOURCE.categories;
+const BIRTH_BENEFITS_META = BIRTH_BENEFITS_DATA_SOURCE.meta;
+const BIRTH_BENEFITS_STORAGE_KEY = "baby-step-calculator.birth-benefits.v1";
 const INSURANCE_PLAN_LABELS = {
   economy: "실속",
   standard: "표준",
@@ -52,6 +60,72 @@ const GENERAL_BENEFIT_RULES = [
 
 function getInsuranceChecklistItems(sections = INSURANCE_CHECKLIST_SECTIONS) {
   return sections.flatMap((section) => section.items || []);
+}
+
+function filterBirthBenefits(benefits = BIRTH_BENEFITS, scope = "all") {
+  return benefits.filter((benefit) => scope === "all" || benefit.scope === scope);
+}
+
+function normalizeBenefitCompletionState(storedState, benefits = BIRTH_BENEFITS) {
+  const source = storedState && typeof storedState === "object" ? storedState : {};
+  return benefits.reduce((state, benefit) => {
+    state[benefit.id] = source[benefit.id] === true;
+    return state;
+  }, {});
+}
+
+function getBenefitProgress(benefits = BIRTH_BENEFITS, completionState = {}) {
+  const completed = benefits.filter((benefit) => completionState[benefit.id] === true).length;
+  const total = benefits.length;
+  return {
+    completed,
+    remaining: total - completed,
+    total,
+    percent: total ? Math.round((completed / total) * 100) : 0,
+  };
+}
+
+function calculateBenefitSummary(benefits = BIRTH_BENEFITS) {
+  return benefits.reduce(
+    (summary, benefit) => {
+      if (!Number.isFinite(benefit.summaryAmount)) {
+        return summary;
+      }
+
+      if (benefit.scope === "national") {
+        summary.national += benefit.summaryAmount;
+      } else if (benefit.scope === "local") {
+        summary.local += benefit.summaryAmount;
+      } else {
+        summary.conditional += benefit.summaryAmount;
+      }
+      return summary;
+    },
+    { national: 0, local: 0, conditional: 0 }
+  );
+}
+
+function getBenefitApplicationStatus(benefit, dueDate, today = formatDate(new Date())) {
+  if (benefit.conditional || !benefit.timing) {
+    return { id: "verify", label: "확인 필요" };
+  }
+
+  const relativeDay = Math.floor((parseDate(today) - parseDate(dueDate)) / DAY_MS);
+  const { startDays, endDays, warningDays = 0 } = benefit.timing;
+
+  if (relativeDay < startDays) {
+    return { id: "prepare", label: "준비 가능" };
+  }
+
+  if (endDays !== null && relativeDay > endDays) {
+    return { id: "verify", label: "확인 필요" };
+  }
+
+  if (endDays !== null && endDays - relativeDay <= warningDays) {
+    return { id: "urgent", label: "기한 임박" };
+  }
+
+  return { id: "open", label: "신청 시기" };
 }
 
 function parseDate(value) {
@@ -785,16 +859,51 @@ function initApp() {
     insuranceFilterButtons: document.querySelectorAll("[data-insurance-filter]"),
     insuranceVisibleCount: document.querySelector("#insuranceVisibleCount"),
     insuranceEmptyState: document.querySelector("#insuranceEmptyState"),
+    benefitsDueDate: document.querySelector("#benefitsDueDate"),
+    benefitsProgressText: document.querySelector("#benefitsProgressText"),
+    benefitsProgressBar: document.querySelector("#benefitsProgressBar"),
+    benefitsCompletedCount: document.querySelector("#benefitsCompletedCount"),
+    benefitsRemainingCount: document.querySelector("#benefitsRemainingCount"),
+    benefitsNationalTotal: document.querySelector("#benefitsNationalTotal"),
+    benefitsLocalTotal: document.querySelector("#benefitsLocalTotal"),
+    benefitsConditionalTotal: document.querySelector("#benefitsConditionalTotal"),
+    benefitsAlerts: document.querySelector("#benefitsAlerts"),
+    benefitsFilterButtons: document.querySelectorAll("[data-benefit-filter]"),
+    benefitsVisibleCount: document.querySelector("#benefitsVisibleCount"),
+    birthBenefitsSections: document.querySelector("#birthBenefitsSections"),
+    benefitsEmptyState: document.querySelector("#benefitsEmptyState"),
+    benefitsVerifiedAt: document.querySelector("#benefitsVerifiedAt"),
+    benefitsNotice: document.querySelector("#benefitsNotice"),
   };
   let selectedInsurancePlan = "standard";
   let insuranceDecisionFilter = "all";
   let insuranceSearchValue = "";
+  let benefitScopeFilter = "all";
+  let benefitCompletionState = loadBenefitCompletionState();
+
+  function loadBenefitCompletionState() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(BIRTH_BENEFITS_STORAGE_KEY) || "{}");
+      return normalizeBenefitCompletionState(stored);
+    } catch (error) {
+      return normalizeBenefitCompletionState({});
+    }
+  }
+
+  function saveBenefitCompletionState() {
+    try {
+      localStorage.setItem(BIRTH_BENEFITS_STORAGE_KEY, JSON.stringify(benefitCompletionState));
+    } catch (error) {
+      // The checklist still works for the current page when storage is unavailable.
+    }
+  }
 
   function setActiveTab(tabName) {
     elements.tabButtons.forEach((button) => {
       const isActive = button.dataset.tabTarget === tabName;
       button.classList.toggle("active", isActive);
       button.setAttribute("aria-selected", String(isActive));
+      button.tabIndex = isActive ? 0 : -1;
     });
 
     elements.tabPanels.forEach((panel) => {
@@ -1010,6 +1119,163 @@ function initApp() {
       elements.insuranceChecklistSections.append(sectionElement);
     });
   }
+
+  function createBenefitDetail(label, value) {
+    const wrapper = document.createElement("div");
+    const term = document.createElement("dt");
+    const description = document.createElement("dd");
+    term.textContent = label;
+    description.textContent = value;
+    wrapper.append(term, description);
+    return wrapper;
+  }
+
+  function createBenefitCard(benefit) {
+    const status = getBenefitApplicationStatus(benefit, state.dueDate);
+    const completed = benefitCompletionState[benefit.id] === true;
+    const card = document.createElement("article");
+    card.className = `benefit-check-card status-${status.id}${completed ? " completed" : ""}`;
+
+    const heading = document.createElement("div");
+    heading.className = "benefit-card-heading";
+
+    const headingCopy = document.createElement("div");
+    const meta = document.createElement("div");
+    meta.className = "benefit-card-meta";
+    const statusBadge = document.createElement("span");
+    statusBadge.className = `benefit-status-badge ${status.id}`;
+    statusBadge.textContent = status.label;
+    const scopeBadge = document.createElement("span");
+    scopeBadge.className = `benefit-scope-badge ${benefit.scope}`;
+    scopeBadge.textContent =
+      benefit.scope === "national" ? "전국 공통" : benefit.scope === "local" ? "충남·천안" : "조건부";
+    meta.append(statusBadge, scopeBadge);
+
+    const title = document.createElement("h4");
+    title.textContent = benefit.title;
+    headingCopy.append(meta, title);
+
+    const completionLabel = document.createElement("label");
+    completionLabel.className = "benefit-completion-control";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = completed;
+    checkbox.dataset.benefitId = benefit.id;
+    const checkboxText = document.createElement("span");
+    checkboxText.textContent = "신청 완료";
+    completionLabel.append(checkbox, checkboxText);
+    heading.append(headingCopy, completionLabel);
+
+    const amount = document.createElement("p");
+    amount.className = "benefit-card-amount";
+    amount.textContent = benefit.amount;
+
+    const details = document.createElement("dl");
+    details.className = "benefit-card-details";
+    details.append(
+      createBenefitDetail("대상", benefit.eligibility),
+      createBenefitDetail("신청 시기", benefit.timingLabel),
+      createBenefitDetail("신청처", benefit.office),
+      createBenefitDetail("준비", benefit.preparation)
+    );
+
+    const source = document.createElement("a");
+    source.className = "benefit-source-link";
+    source.href = benefit.sourceUrl;
+    source.target = "_blank";
+    source.rel = "noreferrer";
+    source.textContent = `공식 출처 · ${benefit.sourceTitle}`;
+
+    card.append(heading, amount, details, source);
+    return card;
+  }
+
+  function renderBenefitAlerts() {
+    const relevant = BIRTH_BENEFITS.filter(
+      (benefit) => {
+        const status = getBenefitApplicationStatus(benefit, state.dueDate).id;
+        return (
+          benefitCompletionState[benefit.id] !== true &&
+          (status === "urgent" || (status === "verify" && benefit.timing && !benefit.conditional))
+        );
+      }
+    );
+    elements.benefitsAlerts.innerHTML = "";
+
+    if (!relevant.length) {
+      elements.benefitsAlerts.hidden = true;
+      return;
+    }
+
+    elements.benefitsAlerts.hidden = false;
+    const title = document.createElement("strong");
+    title.textContent = "먼저 확인할 항목";
+    const copy = document.createElement("span");
+    const visibleNames = relevant.slice(0, 4).map((benefit) => benefit.title);
+    copy.textContent = `${visibleNames.join(" · ")}${relevant.length > 4 ? ` 외 ${relevant.length - 4}개` : ""}`;
+    elements.benefitsAlerts.append(title, copy);
+  }
+
+  function renderBirthBenefits() {
+    const progress = getBenefitProgress(BIRTH_BENEFITS, benefitCompletionState);
+    const summary = calculateBenefitSummary(BIRTH_BENEFITS);
+    const filteredBenefits = filterBirthBenefits(BIRTH_BENEFITS, benefitScopeFilter);
+
+    elements.benefitsDueDate.textContent = formatKoreanDate(state.dueDate);
+    elements.benefitsProgressText.textContent = `${progress.percent}%`;
+    elements.benefitsProgressBar.setAttribute("aria-valuenow", String(progress.percent));
+    elements.benefitsProgressBar.querySelector("span").style.width = `${progress.percent}%`;
+    elements.benefitsCompletedCount.textContent = `${progress.completed}개`;
+    elements.benefitsRemainingCount.textContent = `${progress.remaining}개`;
+    elements.benefitsNationalTotal.textContent = formatWon(summary.national);
+    elements.benefitsLocalTotal.textContent = formatWon(summary.local);
+    elements.benefitsConditionalTotal.textContent = `최대 ${formatWon(summary.conditional)}`;
+    elements.benefitsVisibleCount.textContent =
+      `전체 ${BIRTH_BENEFITS.length}개 중 ${filteredBenefits.length}개 혜택을 표시합니다.`;
+    elements.benefitsVerifiedAt.textContent =
+      `자료 확인일 ${BIRTH_BENEFITS_META.verifiedAt} · ${BIRTH_BENEFITS_META.audience}`;
+    elements.benefitsNotice.textContent = BIRTH_BENEFITS_META.notice;
+
+    elements.benefitsFilterButtons.forEach((button) => {
+      const filter = button.dataset.benefitFilter;
+      const isActive = filter === benefitScopeFilter;
+      button.classList.toggle("active", isActive);
+      button.setAttribute("aria-pressed", String(isActive));
+    });
+
+    elements.birthBenefitsSections.innerHTML = "";
+    elements.benefitsEmptyState.hidden = filteredBenefits.length > 0;
+
+    BIRTH_BENEFIT_CATEGORIES.forEach((category) => {
+      const items = filteredBenefits.filter((benefit) => benefit.category === category.id);
+      if (!items.length) {
+        return;
+      }
+
+      const section = document.createElement("section");
+      section.className = "benefit-category";
+      const heading = document.createElement("div");
+      heading.className = "benefit-category-heading";
+      const headingCopy = document.createElement("div");
+      const title = document.createElement("h3");
+      const description = document.createElement("p");
+      title.textContent = category.title;
+      description.textContent = category.description;
+      headingCopy.append(title, description);
+      const count = document.createElement("span");
+      count.textContent = `${items.length}개`;
+      heading.append(headingCopy, count);
+
+      const cards = document.createElement("div");
+      cards.className = "benefit-card-grid";
+      items.forEach((benefit) => cards.append(createBenefitCard(benefit)));
+      section.append(heading, cards);
+      elements.birthBenefitsSections.append(section);
+    });
+
+    renderBenefitAlerts();
+  }
+
   function renderSegmentControls() {
     elements.segmentList.innerHTML = "";
 
@@ -1351,6 +1617,7 @@ function initApp() {
     renderSegmentControls();
     renderFatherSegmentControls();
     renderOutputs();
+    renderBirthBenefits();
   }
 
   elements.dueDate.addEventListener("change", (event) => {
@@ -1433,6 +1700,24 @@ function initApp() {
   elements.tabButtons.forEach((button) => {
     button.addEventListener("click", () => {
       setActiveTab(button.dataset.tabTarget);
+    });
+
+    button.addEventListener("keydown", (event) => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+        return;
+      }
+
+      event.preventDefault();
+      const buttons = [...elements.tabButtons];
+      const currentIndex = buttons.indexOf(button);
+      const nextIndex =
+        event.key === "Home"
+          ? 0
+          : event.key === "End"
+            ? buttons.length - 1
+            : (currentIndex + (event.key === "ArrowRight" ? 1 : -1) + buttons.length) % buttons.length;
+      buttons[nextIndex].focus();
+      setActiveTab(buttons[nextIndex].dataset.tabTarget);
     });
   });
 
@@ -1583,6 +1868,24 @@ function initApp() {
     });
   });
 
+  elements.benefitsFilterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      benefitScopeFilter = button.dataset.benefitFilter;
+      renderBirthBenefits();
+    });
+  });
+
+  elements.birthBenefitsSections.addEventListener("change", (event) => {
+    const benefitId = event.target.dataset.benefitId;
+    if (!benefitId) {
+      return;
+    }
+
+    benefitCompletionState[benefitId] = event.target.checked;
+    saveBenefitCompletionState();
+    renderBirthBenefits();
+  });
+
   setActiveTab("leave");
   renderInsuranceChecklist();
   render();
@@ -1594,12 +1897,19 @@ if (typeof document !== "undefined") {
 
 if (typeof module !== "undefined") {
   module.exports = {
+    BIRTH_BENEFITS,
+    BIRTH_BENEFIT_CATEGORIES,
     INSURANCE_CHECKLIST_SECTIONS,
     addDays,
+    calculateBenefitSummary,
     addBusinessDays,
     calculateParentalLeaveBenefits,
     calculateSchedule,
     createInitialState,
     differenceInInclusiveDays,
+    filterBirthBenefits,
+    getBenefitApplicationStatus,
+    getBenefitProgress,
+    normalizeBenefitCompletionState,
   };
 }

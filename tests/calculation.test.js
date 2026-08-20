@@ -9,6 +9,13 @@ const {
   INSURANCE_CHECKLIST_SECTIONS,
   calculateParentalLeaveBenefits,
   createInitialState,
+  BIRTH_BENEFITS,
+  BIRTH_BENEFIT_CATEGORIES,
+  calculateBenefitSummary,
+  filterBirthBenefits,
+  getBenefitApplicationStatus,
+  getBenefitProgress,
+  normalizeBenefitCompletionState,
 } = require("../app.js");
 
 test("uses the requested maternity and second pregnancy leave defaults", () => {
@@ -698,4 +705,114 @@ test("applies six plus six to the second parent when father starts parental leav
       totalAmount: 3500000,
     }
   );
+});
+
+test("loads valid and uniquely identified birth benefit records", () => {
+  const requiredFields = [
+    "id",
+    "category",
+    "scope",
+    "title",
+    "amount",
+    "eligibility",
+    "timingLabel",
+    "office",
+    "preparation",
+    "sourceTitle",
+    "sourceUrl",
+    "conditional",
+  ];
+  const ids = BIRTH_BENEFITS.map((benefit) => benefit.id);
+  const categoryIds = new Set(BIRTH_BENEFIT_CATEGORIES.map((category) => category.id));
+
+  assert.equal(new Set(ids).size, ids.length);
+  BIRTH_BENEFITS.forEach((benefit) => {
+    requiredFields.forEach((field) => assert.notEqual(benefit[field], undefined));
+    assert.equal(categoryIds.has(benefit.category), true);
+    assert.equal(["national", "local", "conditional"].includes(benefit.scope), true);
+    assert.doesNotThrow(() => new URL(benefit.sourceUrl));
+    assert.equal(new URL(benefit.sourceUrl).protocol, "https:");
+  });
+});
+
+test("includes additional pregnancy, refund, childcare and conditional supports", () => {
+  const expectedIds = [
+    "pregnancy-medical-voucher",
+    "cheonan-prenatal-screening",
+    "folic-acid-iron",
+    "high-risk-pregnancy-care",
+    "cesarean-copay",
+    "pregnant-parking-discount",
+    "pregnancy-parenting-class",
+    "postpartum-helper-copay-refund",
+    "metabolic-special-diet",
+    "atopy-asthma-care",
+    "chungnam-365-childcare",
+    "childcare-service",
+    "out-of-hospital-birth",
+    "disabled-woman-birth-grant",
+    "teen-mother-medical",
+    "diaper-formula-voucher",
+    "nutrition-plus",
+    "postpartum-care-tax-credit",
+    "birth-gift-tax-deduction",
+  ];
+  const ids = new Set(BIRTH_BENEFITS.map((benefit) => benefit.id));
+
+  assert.equal(BIRTH_BENEFITS.length, 35);
+  expectedIds.forEach((id) => assert.equal(ids.has(id), true));
+  assert.deepEqual(calculateBenefitSummary(BIRTH_BENEFITS), {
+    national: 23520000,
+    local: 800000,
+    conditional: 1800000,
+  });
+});
+
+test("filters birth benefits and calculates checklist progress", () => {
+  const sample = BIRTH_BENEFITS.slice(0, 3);
+  const completion = { [sample[0].id]: true, [sample[1].id]: false };
+
+  assert.deepEqual(getBenefitProgress(sample, completion), {
+    completed: 1,
+    remaining: 2,
+    total: 3,
+    percent: 33,
+  });
+  assert.equal(filterBirthBenefits(BIRTH_BENEFITS, "local").every((item) => item.scope === "local"), true);
+});
+
+test("separates national, local and conditional benefit amounts", () => {
+  const summary = calculateBenefitSummary([
+    { scope: "national", summaryAmount: 100 },
+    { scope: "local", summaryAmount: 50 },
+    { scope: "conditional", summaryAmount: 25 },
+    { scope: "national", summaryAmount: null },
+  ]);
+
+  assert.deepEqual(summary, { national: 100, local: 50, conditional: 25 });
+});
+
+test("derives benefit timing statuses at application boundaries", () => {
+  const benefit = {
+    conditional: false,
+    timing: { startDays: -40, endDays: 60, warningDays: 14 },
+  };
+
+  assert.equal(getBenefitApplicationStatus(benefit, "2026-12-14", "2026-10-01").label, "준비 가능");
+  assert.equal(getBenefitApplicationStatus(benefit, "2026-12-14", "2026-11-04").label, "신청 시기");
+  assert.equal(getBenefitApplicationStatus(benefit, "2026-12-14", "2027-01-29").label, "기한 임박");
+  assert.equal(getBenefitApplicationStatus(benefit, "2026-12-14", "2027-02-13").label, "확인 필요");
+  assert.equal(
+    getBenefitApplicationStatus({ ...benefit, conditional: true }, "2026-12-14", "2026-12-14").label,
+    "확인 필요"
+  );
+});
+
+test("restores known completion ids while defaulting new benefits to incomplete", () => {
+  const benefits = [{ id: "kept" }, { id: "new" }];
+
+  assert.deepEqual(normalizeBenefitCompletionState({ kept: true, removed: true }, benefits), {
+    kept: true,
+    new: false,
+  });
 });

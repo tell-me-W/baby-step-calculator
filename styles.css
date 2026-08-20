@@ -1222,6 +1222,318 @@ textarea {
   font-size: 13px;
 }
 
+.benefits-hero-heading {
+  align-items: start;
+}
+
+.benefits-date-card {
+  display: grid;
+  gap: 3px;
+  border-left: 3px solid var(--accent);
+  padding: 5px 0 5px 12px;
+}
+
+.benefits-date-card span,
+.benefits-date-card small,
+.metric-card small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.benefits-date-card strong {
+  font-size: 18px;
+}
+
+.benefits-progress-layout {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.benefits-progress-card {
+  display: grid;
+  gap: 10px;
+}
+
+.benefits-progress-copy {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.benefits-progress-copy span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.benefits-progress-copy strong {
+  font-size: 24px;
+}
+
+.benefits-progress-track {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #e5ecea;
+}
+
+.benefits-progress-track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--accent);
+  transition: width 180ms ease;
+}
+
+.benefits-counts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.benefits-counts div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+
+.benefits-counts span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.benefits-money-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.benefits-alerts {
+  display: grid;
+  gap: 4px;
+  margin-top: 18px;
+  border: 1px solid #e8c77d;
+  background: var(--warning);
+  color: var(--warning-text);
+  padding: 12px 14px;
+}
+
+.benefits-alerts span {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.benefits-filter-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 22px;
+}
+
+.benefits-sections {
+  display: grid;
+  gap: 28px;
+}
+
+.benefit-category {
+  display: grid;
+  gap: 12px;
+}
+
+.benefit-category-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 2px solid var(--text);
+  padding-bottom: 9px;
+}
+
+.benefit-category-heading h3,
+.benefit-card-heading h4 {
+  margin: 0;
+}
+
+.benefit-category-heading h3 {
+  font-size: 19px;
+}
+
+.benefit-category-heading p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.benefit-category-heading > span {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.benefit-card-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.benefit-check-card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-top: 4px solid #94a3b8;
+  background: #fff;
+  padding: 16px;
+}
+
+.benefit-check-card.status-open {
+  border-top-color: var(--accent);
+}
+
+.benefit-check-card.status-urgent {
+  border-top-color: #c17b00;
+}
+
+.benefit-check-card.status-verify {
+  border-top-color: #64748b;
+}
+
+.benefit-check-card.completed {
+  background: #f2f7f6;
+  opacity: 0.78;
+}
+
+.benefit-card-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.benefit-card-heading h4 {
+  margin-top: 7px;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.benefit-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.benefit-status-badge,
+.benefit-scope-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.benefit-status-badge.prepare {
+  background: #eef2f1;
+  color: #475569;
+}
+
+.benefit-status-badge.open {
+  background: var(--soft-accent);
+  color: var(--accent-strong);
+}
+
+.benefit-status-badge.urgent {
+  background: var(--warning);
+  color: var(--warning-text);
+}
+
+.benefit-status-badge.verify,
+.benefit-scope-badge.conditional {
+  background: #eef1f4;
+  color: #475569;
+}
+
+.benefit-scope-badge.national {
+  background: #e8f0f8;
+  color: #28577c;
+}
+
+.benefit-scope-badge.local {
+  background: #e5f3ea;
+  color: #28613d;
+}
+
+.benefit-completion-control {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.benefit-completion-control input {
+  width: 21px;
+  height: 21px;
+  accent-color: var(--accent);
+}
+
+.benefit-card-amount {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+.benefit-card-details {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.benefit-card-details div {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.benefit-card-details dt {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.benefit-card-details dd {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.benefit-source-link {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  text-underline-offset: 3px;
+}
+
+.benefits-verified-at {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .eligibility-card {
   display: grid;
   gap: 8px;
@@ -1365,6 +1677,28 @@ textarea {
 
   .insurance-filter-buttons {
     min-width: 390px;
+  }
+
+  .benefits-hero-heading {
+    align-items: end;
+  }
+
+  .benefits-progress-layout {
+    grid-template-columns: minmax(0, 1fr) 260px;
+    align-items: end;
+  }
+
+  .benefits-money-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .benefits-filter-buttons {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    max-width: 620px;
+  }
+
+  .benefit-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .checklist-items {
