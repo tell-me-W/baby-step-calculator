@@ -21,10 +21,17 @@ const {
 test("uses the requested maternity and second pregnancy leave defaults", () => {
   const state = createInitialState();
 
-  assert.equal(state.maternityPrenatalDays, 20);
-  assert.equal(state.maternityPostnatalDays, 70);
-  assert.equal(state.segments[1].startDate, "2026-10-01");
+  assert.equal(state.dueDate, "2026-12-12");
+  assert.equal(state.maternityPrenatalDays, 11);
+  assert.equal(state.maternityPostnatalDays, 79);
+  assert.equal(state.segments[1].startDate, "2026-10-14");
   assert.equal(state.segments[1].days, 80);
+
+  const schedule = calculateSchedule(state);
+  const maternity = schedule.items.find((item) => item.type === "MATERNITY");
+
+  assert.equal(maternity.startDate, "2026-12-01");
+  assert.equal(maternity.endDate, "2027-02-28");
 });
 
 test("anchors maternity leave 45 days before due date for a 90 day leave", () => {

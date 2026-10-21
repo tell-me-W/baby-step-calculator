@@ -1,8 +1,8 @@
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_MATERNITY_PRENATAL_DAYS = 45;
 const DEFAULT_MATERNITY_POSTNATAL_DAYS = 45;
-const INITIAL_MATERNITY_PRENATAL_DAYS = 20;
-const INITIAL_MATERNITY_POSTNATAL_DAYS = 70;
+const INITIAL_MATERNITY_PRENATAL_DAYS = 11;
+const INITIAL_MATERNITY_POSTNATAL_DAYS = 79;
 const TOTAL_MATERNITY_LEAVE_DAYS = 90;
 const MIN_MATERNITY_POSTNATAL_DAYS = 45;
 const MAX_MATERNITY_PRENATAL_DAYS =
@@ -794,7 +794,7 @@ function formatKoreanDate(dateString) {
 
 function createInitialState() {
   return {
-    dueDate: "2026-12-14",
+    dueDate: "2026-12-12",
     maternityPrenatalDays: INITIAL_MATERNITY_PRENATAL_DAYS,
     maternityPostnatalDays: INITIAL_MATERNITY_POSTNATAL_DAYS,
     totalParentalLeaveDays: 548,
@@ -804,7 +804,7 @@ function createInitialState() {
     nextFatherSegmentId: 102,
     segments: [
       { id: 1, type: "PREG_LEAVE", startDate: "2026-05-01", days: 61 },
-      { id: 2, type: "PREG_LEAVE", startDate: "2026-10-01", days: 80 },
+      { id: 2, type: "PREG_LEAVE", startDate: "2026-10-14", days: 80 },
     ],
     fatherSegments: [
       { id: 101, type: "FATHER_PARENTAL", startDate: "2027-03-01", days: 122 },
