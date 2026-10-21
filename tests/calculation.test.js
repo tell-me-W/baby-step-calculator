@@ -680,6 +680,29 @@ test("groups monthly parental leave benefits by expected payment month with retr
   });
 });
 
+test("keeps a split pregnancy leave benefit month across a calendar month boundary", () => {
+  const schedule = calculateSchedule(createInitialState());
+  const benefit = calculateParentalLeaveBenefits(schedule, {
+    motherMonthlyWage: 5000000,
+    fatherMonthlyWage: 5000000,
+  });
+  const october = benefit.rows.find((row) => row.month === "2026-10");
+  const november = benefit.rows.find((row) => row.month === "2026-11");
+
+  assert.deepEqual(
+    october.parts.map(({ days, monthNumber, amount }) => ({ days, monthNumber, amount })),
+    [{ days: 18, monthNumber: 3, amount: 1451613 }]
+  );
+  assert.deepEqual(
+    november.parts.map(({ days, monthNumber, amount }) => ({ days, monthNumber, amount })),
+    [
+      { days: 13, monthNumber: 3, amount: 1048387 },
+      { days: 17, monthNumber: 4, amount: 1133333 },
+    ]
+  );
+  assert.equal(november.totalAmount, 2181720);
+});
+
 test("applies six plus six to the second parent when father starts parental leave first", () => {
   const benefit = calculateParentalLeaveBenefits(
     {
