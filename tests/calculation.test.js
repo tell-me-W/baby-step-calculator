@@ -490,7 +490,7 @@ test("loads the spreadsheet-based insurance coverage review data", () => {
   });
 });
 
-test("groups monthly parental leave benefits by expected payment month with retroactive six plus six adjustments", () => {
+test("carries an unfinished benefit month through maternity leave and reconciles totals", () => {
   const schedule = calculateSchedule({
     dueDate: "2026-12-14",
     totalParentalLeaveDays: 548,
@@ -502,182 +502,21 @@ test("groups monthly parental leave benefits by expected payment month with retr
       { id: 1, type: "FATHER_PARENTAL", startDate: "2027-03-01", days: 122 },
     ],
   });
-
   const benefit = calculateParentalLeaveBenefits(schedule, {
     motherMonthlyWage: 5000000,
     fatherMonthlyWage: 5000000,
   });
-
+  const january = benefit.rows.find((row) => row.month === "2027-01");
   assert.deepEqual(
-    benefit.rows.map(({ month, owner, leaveDaysText, ruleText, amountText, totalAmount }) => ({
-      month,
-      owner,
-      leaveDaysText,
-      ruleText,
-      amountText,
-      totalAmount,
-    })),
+    january.parts.map(({ monthNumber, days, baseAmount }) => ({ monthNumber, days, baseAmount })),
     [
-      {
-        month: "2026-05",
-        owner: "아내",
-        leaveDaysText: "아내 31일",
-        ruleText: "일반 1개월차, 상한 250만원",
-        amountText: "2,500,000원",
-        totalAmount: 2500000,
-      },
-      {
-        month: "2026-06",
-        owner: "아내",
-        leaveDaysText: "아내 30일",
-        ruleText: "일반 2개월차, 상한 250만원",
-        amountText: "2,500,000원",
-        totalAmount: 2500000,
-      },
-      {
-        month: "2026-10",
-        owner: "아내",
-        leaveDaysText: "아내 29일",
-        ruleText: "일반 3개월차, 상한 250만원 일할",
-        amountText: "2,338,710원",
-        totalAmount: 2338710,
-      },
-      {
-        month: "2027-01",
-        owner: "아내",
-        leaveDaysText: "아내 4일",
-        ruleText: "일반 4개월차, 상한 200만원 일할",
-        amountText: "258,065원",
-        totalAmount: 258065,
-      },
-      {
-        month: "2027-02",
-        owner: "아내",
-        leaveDaysText: "아내 28일",
-        ruleText: "일반 5개월차, 상한 200만원",
-        amountText: "2,000,000원",
-        totalAmount: 2000000,
-      },
-      {
-        month: "2027-03",
-        owner: "아내+남편",
-        leaveDaysText: "아내 31일 + 남편 31일",
-        ruleText: "아내 일반 6개월차, 상한 200만원 + 남편 6+6 1개월차, 상한 250만원",
-        amountText: "2,000,000원 + 2,500,000원 = 4,500,000원",
-        totalAmount: 4500000,
-      },
-      {
-        month: "2027-04",
-        owner: "아내+남편",
-        leaveDaysText: "아내 30일 + 남편 30일",
-        ruleText: "아내 일반 7개월차 이후, 상한 160만원 + 남편 6+6 2개월차, 상한 250만원",
-        amountText: "1,600,000원 + 2,500,000원 = 4,100,000원",
-        totalAmount: 4100000,
-      },
-      {
-        month: "2027-05",
-        owner: "아내+남편",
-        leaveDaysText: "아내 31일 + 남편 31일",
-        ruleText: "아내 일반 7개월차 이후, 상한 160만원 + 6+6 3개월차 소급 + 남편 6+6 3개월차, 상한 300만원",
-        amountText: "1,600,000원 + 467,742원 + 3,000,000원 = 5,067,742원",
-        totalAmount: 5067742,
-      },
-      {
-        month: "2027-06",
-        owner: "아내+남편",
-        leaveDaysText: "아내 30일 + 남편 30일",
-        ruleText: "아내 일반 7개월차 이후, 상한 160만원 + 6+6 4개월차 소급 + 남편 6+6 4개월차, 상한 350만원",
-        amountText: "1,600,000원 + 193,548원 + 3,500,000원 = 5,293,548원",
-        totalAmount: 5293548,
-      },
-      {
-        month: "2027-07",
-        owner: "아내",
-        leaveDaysText: "아내 31일",
-        ruleText: "일반 7개월차 이후, 상한 160만원",
-        amountText: "1,600,000원",
-        totalAmount: 1600000,
-      },
-      {
-        month: "2027-08",
-        owner: "아내",
-        leaveDaysText: "아내 31일",
-        ruleText: "일반 7개월차 이후, 상한 160만원",
-        amountText: "1,600,000원",
-        totalAmount: 1600000,
-      },
-      {
-        month: "2027-09",
-        owner: "아내",
-        leaveDaysText: "아내 30일",
-        ruleText: "일반 7개월차 이후, 상한 160만원",
-        amountText: "1,600,000원",
-        totalAmount: 1600000,
-      },
-      {
-        month: "2027-10",
-        owner: "아내",
-        leaveDaysText: "아내 31일",
-        ruleText: "일반 7개월차 이후, 상한 160만원",
-        amountText: "1,600,000원",
-        totalAmount: 1600000,
-      },
-      {
-        month: "2027-11",
-        owner: "아내",
-        leaveDaysText: "아내 30일",
-        ruleText: "일반 7개월차 이후, 상한 160만원",
-        amountText: "1,600,000원",
-        totalAmount: 1600000,
-      },
-      {
-        month: "2027-12",
-        owner: "아내",
-        leaveDaysText: "아내 31일",
-        ruleText: "일반 7개월차 이후, 상한 160만원",
-        amountText: "1,600,000원",
-        totalAmount: 1600000,
-      },
-      {
-        month: "2028-01",
-        owner: "아내",
-        leaveDaysText: "아내 31일",
-        ruleText: "일반 7개월차 이후, 상한 160만원",
-        amountText: "1,600,000원",
-        totalAmount: 1600000,
-      },
-      {
-        month: "2028-02",
-        owner: "아내",
-        leaveDaysText: "아내 29일",
-        ruleText: "일반 7개월차 이후, 상한 160만원",
-        amountText: "1,600,000원",
-        totalAmount: 1600000,
-      },
-      {
-        month: "2028-03",
-        owner: "아내",
-        leaveDaysText: "아내 31일",
-        ruleText: "일반 7개월차 이후, 상한 160만원",
-        amountText: "1,600,000원",
-        totalAmount: 1600000,
-      },
-      {
-        month: "2028-04",
-        owner: "아내",
-        leaveDaysText: "아내 29일",
-        ruleText: "일반 7개월차 이후, 상한 160만원 일할",
-        amountText: "1,546,667원",
-        totalAmount: 1546667,
-      },
+      { monthNumber: 3, days: 2, baseAmount: 161290 },
+      { monthNumber: 4, days: 2, baseAmount: 133333 },
     ]
   );
-
-  assert.deepEqual(benefit.totals, {
-    mother: 33004732,
-    father: 11500000,
-    household: 44504732,
-  });
+  assert.equal(benefit.totals.household, benefit.totals.mother + benefit.totals.father);
+  assert.equal(benefit.rows.flatMap((row) => row.parts)
+    .filter((part) => part.owner === "mother").reduce((sum, part) => sum + part.days, 0), 548);
 });
 
 test("keeps a split pregnancy leave benefit month across a calendar month boundary", () => {
@@ -701,6 +540,123 @@ test("keeps a split pregnancy leave benefit month across a calendar month bounda
     ]
   );
   assert.equal(november.totalAmount, 2181720);
+});
+
+test("audits every benefit period through the final payment for the current plan", () => {
+  const schedule = calculateSchedule(createInitialState());
+  const benefit = calculateParentalLeaveBenefits(schedule, {
+    motherMonthlyWage: 5000000,
+    fatherMonthlyWage: 5000000,
+  });
+  const parts = benefit.rows.flatMap((row) => row.parts);
+  const mother = parts.filter((part) => part.owner === "mother");
+  const expectedPeriods = [
+    [1, "2026-05-01", "2026-05-31", 31, 2500000],
+    [2, "2026-06-01", "2026-06-30", 30, 2500000],
+    [3, "2026-10-14", "2026-11-13", 31, 2500000],
+    [4, "2026-11-14", "2027-03-13", 30, 2000000],
+    [5, "2027-03-14", "2027-04-13", 31, 2000000],
+    [6, "2027-04-14", "2027-05-13", 30, 2000000],
+    [7, "2027-05-14", "2027-06-13", 31, 1600000],
+    [8, "2027-06-14", "2027-07-13", 30, 1600000],
+    [9, "2027-07-14", "2027-08-13", 31, 1600000],
+    [10, "2027-08-14", "2027-09-13", 31, 1600000],
+    [11, "2027-09-14", "2027-10-13", 30, 1600000],
+    [12, "2027-10-14", "2027-11-13", 31, 1600000],
+    [13, "2027-11-14", "2027-12-13", 30, 1600000],
+    [14, "2027-12-14", "2028-01-13", 31, 1600000],
+    [15, "2028-01-14", "2028-02-13", 31, 1600000],
+    [16, "2028-02-14", "2028-03-13", 29, 1600000],
+    [17, "2028-03-14", "2028-04-13", 31, 1600000],
+    [18, "2028-04-14", "2028-05-12", 29, 1546667],
+  ];
+  for (const [number, start, end, days, amount] of expectedPeriods) {
+    const period = mother.filter((part) => part.monthNumber === number);
+    assert.deepEqual([
+      number, period[0].startDate, period.at(-1).endDate,
+      period.reduce((sum, part) => sum + part.days, 0),
+      period.reduce((sum, part) => sum + part.baseAmount, 0),
+    ], [number, start, end, days, amount]);
+  }
+  assert.deepEqual(benefit.rows.map((row) => [row.month, row.totalAmount]), [
+    ["2026-05", 2500000], ["2026-06", 2500000], ["2026-10", 1451613],
+    ["2026-11", 2181720], ["2027-03", 4527957], ["2027-04", 4472043],
+    ["2027-05", 5295699], ["2027-06", 6577635], ["2027-07", 1622365],
+    ["2027-08", 1600000], ["2027-09", 1577635], ["2027-10", 1622365],
+    ["2027-11", 1577635], ["2027-12", 1622365], ["2028-01", 1600000],
+    ["2028-02", 1553727], ["2028-03", 1646273], ["2028-04", 1577635],
+    ["2028-05", 640000],
+  ]);
+  assert.deepEqual(benefit.totals, { mother: 34646667, father: 11500000, household: 46146667 });
+  assert.deepEqual(mother.flatMap((part) => part.retroAdjustments), [
+    { monthNumber: 3, amount: 500000 }, { monthNumber: 4, amount: 1500000 },
+  ]);
+  for (const [owner, items, types, expectedDays] of [
+    ["mother", schedule.motherItems, ["PREG_LEAVE", "POSTNATAL"], 548],
+    ["father", schedule.fatherItems, ["FATHER_PARENTAL"], 122],
+  ]) {
+    const dates = parts.filter((part) => part.owner === owner && !part.isRetroOnly)
+      .flatMap((part) => Array.from({ length: part.days }, (_, day) => addDays(part.startDate, day)));
+    const expectedDates = items.filter((item) => types.includes(item.type))
+      .flatMap((item) => Array.from({ length: item.days }, (_, day) => addDays(item.startDate, day)));
+    assert.equal(new Set(dates).size, expectedDays);
+    assert.deepEqual(dates, expectedDates);
+  }
+});
+
+test("father benefit periods also carry their balance over a break and a month boundary", () => {
+  const benefit = calculateParentalLeaveBenefits({ fatherItems: [
+    { type: "FATHER_PARENTAL", startDate: "2027-01-14", endDate: "2027-01-31" },
+    { type: "FATHER_PARENTAL", startDate: "2027-03-01", endDate: "2027-04-13" },
+  ] }, { fatherMonthlyWage: 5000000 });
+  assert.deepEqual(benefit.rows.map((row) => row.parts.map((part) => [part.monthNumber, part.days])), [
+    [[1, 18]], [[1, 13], [2, 18]], [[2, 13]],
+  ]);
+  assert.equal(benefit.totals.father, 5000000);
+});
+
+test("month-end benefit periods include February's last day", () => {
+  const benefit = calculateParentalLeaveBenefits({ motherItems: [
+    { type: "POSTNATAL", startDate: "2027-01-31", endDate: "2027-02-28" },
+  ] }, { motherMonthlyWage: 5000000 });
+  assert.deepEqual(benefit.rows.flatMap((row) => row.parts).map((part) => [part.monthNumber, part.days]), [
+    [1, 1], [1, 28],
+  ]);
+  assert.equal(benefit.totals.mother, 2500000);
+});
+
+test("six plus six uses only the common fractional period for simultaneous starts", () => {
+  const benefit = calculateParentalLeaveBenefits({
+    motherItems: [{ type: "POSTNATAL", startDate: "2027-03-01", endDate: "2027-06-30" }],
+    fatherItems: [{ type: "FATHER_PARENTAL", startDate: "2027-03-01", endDate: "2027-06-15" }],
+  }, { motherMonthlyWage: 5000000, fatherMonthlyWage: 5000000 });
+  const june = benefit.rows.find((row) => row.month === "2027-06");
+  assert.deepEqual(june.parts.map((part) => [part.owner, part.baseAmount]), [
+    ["mother", 2750000], ["father", 1750000],
+  ]);
+});
+
+test("retroactive six plus six is capped by the second parent's partial period", () => {
+  const benefit = calculateParentalLeaveBenefits({
+    motherItems: [{ type: "POSTNATAL", startDate: "2027-01-01", endDate: "2027-04-30" }],
+    fatherItems: [{ type: "FATHER_PARENTAL", startDate: "2027-05-01", endDate: "2027-08-15" }],
+  }, { motherMonthlyWage: 5000000, fatherMonthlyWage: 5000000 });
+  const august = benefit.rows.find((row) => row.month === "2027-08");
+  const retro = august.parts.find((part) => part.owner === "mother");
+  assert.equal(retro.amount, 725806);
+  assert.equal(retro.isRetroOnly, true);
+});
+
+test("splitting a continuous leave into schedule blocks preserves every payment", () => {
+  const wages = { motherMonthlyWage: 1800000 };
+  const combined = calculateParentalLeaveBenefits({ motherItems: [
+    { type: "POSTNATAL", startDate: "2027-03-14", endDate: "2028-05-12" },
+  ] }, wages);
+  const split = calculateParentalLeaveBenefits({ motherItems: [
+    { type: "POSTNATAL", startDate: "2027-03-14", endDate: "2027-11-11" },
+    { type: "POSTNATAL", startDate: "2027-11-12", endDate: "2028-05-12" },
+  ] }, wages);
+  assert.deepEqual(split, combined);
 });
 
 test("applies six plus six to the second parent when father starts parental leave first", () => {

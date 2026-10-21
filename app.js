@@ -204,7 +204,7 @@ function formatCap(cap) {
   return `${Math.round(cap / 10000)}만원`;
 }
 
-function splitBenefitPeriodIntoMonthlyChunks(startDate, endDate, owner, monthNumber, periodDays) {
+function splitBenefitPeriodIntoMonthlyChunks(startDate, endDate, owner, monthNumber, periodDays, usedDays = 0) {
   const chunks = [];
   let cursor = startDate;
 
@@ -223,10 +223,12 @@ function splitBenefitPeriodIntoMonthlyChunks(startDate, endDate, owner, monthNum
       days,
       daysInMonth: periodDays,
       monthNumber,
+      periodOffset: usedDays,
       isPartialMonth: days !== periodDays,
     });
 
     cursor = addDays(chunkEnd, 1);
+    usedDays += days;
   }
 
   return chunks;
@@ -235,6 +237,8 @@ function splitBenefitPeriodIntoMonthlyChunks(startDate, endDate, owner, monthNum
 function createBenefitChunks(items, owner, includedTypes) {
   const chunks = [];
   let monthNumber = 1;
+  let periodDays = 0;
+  let usedDays = 0;
   const leaveItems = items
     .filter((item) => includedTypes.includes(item.type))
     .sort((a, b) => parseDate(a.startDate) - parseDate(b.startDate))
@@ -243,7 +247,6 @@ function createBenefitChunks(items, owner, includedTypes) {
 
       if (
         previous &&
-        previous.type === item.type &&
         addDays(previous.endDate, 1) === item.startDate
       ) {
         previous.endDate = item.endDate;
@@ -255,48 +258,37 @@ function createBenefitChunks(items, owner, includedTypes) {
     }, []);
 
   leaveItems.forEach((item) => {
-    if (item.type !== "PREG_LEAVE" || item.startDate.endsWith("-01")) {
-      let calendarCursor = item.startDate;
-
-      while (parseDate(calendarCursor) <= parseDate(item.endDate)) {
-        const month = getMonthKey(calendarCursor);
-        const calendarEnd = parseDate(item.endDate) < parseDate(getMonthEndDate(month))
-          ? item.endDate
-          : getMonthEndDate(month);
-
-        chunks.push(...splitBenefitPeriodIntoMonthlyChunks(
-          calendarCursor,
-          calendarEnd,
-          owner,
-          monthNumber,
-          getDaysInMonth(month)
-        ));
-
-        monthNumber += 1;
-        calendarCursor = addDays(calendarEnd, 1);
-      }
-
-      return;
-    }
-
     let cursor = item.startDate;
 
     while (parseDate(cursor) <= parseDate(item.endDate)) {
-      const fullPeriodEnd = addDays(addCalendarMonths(cursor, 1), -1);
+      // Work and maternity leave pause the current benefit month; only leave
+      // days consume its balance, including across schedule item boundaries.
+      if (usedDays === 0) {
+        const nextMonthDate = addCalendarMonths(cursor, 1);
+        const periodEnd = Number(nextMonthDate.slice(8)) < Number(cursor.slice(8))
+          ? nextMonthDate
+          : addDays(nextMonthDate, -1);
+        periodDays = differenceInInclusiveDays(cursor, periodEnd);
+      }
+      const fullPeriodEnd = addDays(cursor, periodDays - usedDays - 1);
       const periodEnd = parseDate(item.endDate) < parseDate(fullPeriodEnd)
         ? item.endDate
         : fullPeriodEnd;
-      const periodDays = differenceInInclusiveDays(cursor, fullPeriodEnd);
 
       chunks.push(...splitBenefitPeriodIntoMonthlyChunks(
         cursor,
         periodEnd,
         owner,
         monthNumber,
-        periodDays
+        periodDays,
+        usedDays
       ));
 
-      monthNumber += 1;
+      usedDays += differenceInInclusiveDays(cursor, periodEnd);
+      if (usedDays === periodDays) {
+        monthNumber += 1;
+        usedDays = 0;
+      }
       cursor = addDays(periodEnd, 1);
     }
   });
@@ -306,11 +298,6 @@ function createBenefitChunks(items, owner, includedTypes) {
 
 function getGeneralBenefitRule(monthNumber) {
   return GENERAL_BENEFIT_RULES.find((rule) => monthNumber <= rule.throughMonth);
-}
-
-function calculateBenefitAmount(monthlyWage, rate, cap, days, daysInMonth) {
-  const monthlyAmount = Math.min(Math.max(Number(monthlyWage) || 0, 0) * rate, cap);
-  return Math.round(monthlyAmount * (days / daysInMonth));
 }
 
 function getBenefitRuleText(monthNumber, useSixPlusSix, cap) {
@@ -344,11 +331,24 @@ function getBenefitRule(monthNumber, useSixPlusSix) {
 function createBenefitPart(chunk, monthNumber, monthlyWage, options = {}) {
   const ownerLabel = BENEFIT_OWNER_LABELS[chunk.owner];
   const rule = getBenefitRule(monthNumber, Boolean(options.useSixPlusSix));
-  const baseAmount = calculateBenefitAmount(monthlyWage, rule.rate, rule.cap, chunk.days, chunk.daysInMonth);
+  const generalRule = getBenefitRule(monthNumber, false);
+  const wage = Math.max(Number(monthlyWage) || 0, 0);
+  const generalMonthlyAmount = Math.min(wage * generalRule.rate, generalRule.cap);
+  const eligibleFraction = options.useSixPlusSix ? options.sixPlusSixFraction : 0;
+  const cumulativeAmount = (days) => {
+    const fraction = days / chunk.daysInMonth;
+    const specialFraction = Math.min(fraction, eligibleFraction);
+    return Math.round(generalMonthlyAmount * fraction
+      + (Math.min(wage, rule.cap) - generalMonthlyAmount) * specialFraction);
+  };
+  const baseAmount = cumulativeAmount(chunk.periodOffset + chunk.days)
+    - cumulativeAmount(chunk.periodOffset);
   const retroAdjustments = options.retroAdjustments || [];
   const amount = retroAdjustments.reduce((sum, adjustment) => sum + adjustment.amount, baseAmount);
   const ruleText = [
     `${rule.ruleText}${chunk.isPartialMonth ? " 일할" : ""}`,
+    ...(options.useSixPlusSix && eligibleFraction < 1
+      ? ["부부 공통 사용기간만 특례 적용·나머지 일반급여"] : []),
     ...retroAdjustments.map((adjustment) => `6+6 ${adjustment.monthNumber}개월차 소급`),
   ].join(" + ");
   const amountText = [
@@ -360,6 +360,12 @@ function createBenefitPart(chunk, monthNumber, monthlyWage, options = {}) {
     owner: chunk.owner,
     ownerLabel,
     month: chunk.month,
+    startDate: chunk.startDate,
+    endDate: chunk.endDate,
+    periodDays: chunk.daysInMonth,
+    periodOffset: chunk.periodOffset,
+    baseAmount,
+    retroAdjustments,
     days: chunk.days,
     monthNumber,
     ruleText,
@@ -430,27 +436,18 @@ function collectBenefitParts(schedule, wages) {
     for (let monthNumber = 1; monthNumber <= sixPlusSixMonths; monthNumber += 1) {
       const firstChunks = firstParent.chunks.filter((chunk) => chunk.monthNumber === monthNumber);
       const secondChunks = secondParent.chunks.filter((chunk) => chunk.monthNumber === monthNumber);
-      const paymentMonth = secondChunks[secondChunks.length - 1]?.month;
+      const firstEndMonth = firstChunks[firstChunks.length - 1]?.month;
+      const secondEndMonth = secondChunks[secondChunks.length - 1]?.month;
+      const paymentMonth = firstEndMonth > secondEndMonth ? firstEndMonth : secondEndMonth;
+      const matchedFraction = Math.min(
+        firstChunks.reduce((sum, chunk) => sum + chunk.days / chunk.daysInMonth, 0),
+        secondChunks.reduce((sum, chunk) => sum + chunk.days / chunk.daysInMonth, 0)
+      );
       const generalRule = getBenefitRule(monthNumber, false);
       const sixPlusSixRule = getBenefitRule(monthNumber, true);
-      const retroAmount = firstChunks.reduce((sum, firstChunk) => {
-        const generalAmount = calculateBenefitAmount(
-          firstParent.wage,
-          generalRule.rate,
-          generalRule.cap,
-          firstChunk.days,
-          firstChunk.daysInMonth
-        );
-        const sixPlusSixAmount = calculateBenefitAmount(
-          firstParent.wage,
-          sixPlusSixRule.rate,
-          sixPlusSixRule.cap,
-          firstChunk.days,
-          firstChunk.daysInMonth
-        );
-
-        return sum + sixPlusSixAmount - generalAmount;
-      }, 0);
+      const firstWage = Math.max(Number(firstParent.wage) || 0, 0);
+      const retroAmount = Math.round(Math.min(firstWage, sixPlusSixRule.cap) * matchedFraction)
+        - Math.round(Math.min(firstWage * generalRule.rate, generalRule.cap) * matchedFraction);
 
       if (retroAmount > 0 && paymentMonth) {
         const key = `${firstOwner}:${paymentMonth}`;
@@ -482,6 +479,9 @@ function collectBenefitParts(schedule, wages) {
         (hasSameStart || secondOwner === "mother");
       return createBenefitPart(chunk, monthNumber, wages.motherMonthlyWage, {
         useSixPlusSix,
+        sixPlusSixFraction: Math.min(1, fatherMonthlyChunks
+          .filter((part) => part.monthNumber === monthNumber)
+          .reduce((sum, part) => sum + part.days / part.daysInMonth, 0)),
         retroAdjustments: takeRetroAdjustments("mother", chunk.month),
       });
     }),
@@ -494,6 +494,9 @@ function collectBenefitParts(schedule, wages) {
 
       return createBenefitPart(chunk, monthNumber, wages.fatherMonthlyWage, {
         useSixPlusSix,
+        sixPlusSixFraction: Math.min(1, motherMonthlyChunks
+          .filter((part) => part.monthNumber === monthNumber)
+          .reduce((sum, part) => sum + part.days / part.daysInMonth, 0)),
         retroAdjustments: takeRetroAdjustments("father", chunk.month),
       });
     }),
